@@ -2,6 +2,7 @@ import sys
 
 from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from customs import *
 
 
 class MyWidget(QMainWindow):
