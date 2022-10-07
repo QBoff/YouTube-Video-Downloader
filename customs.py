@@ -2,11 +2,11 @@ from enum import Enum as __Enum
 
 
 # EXCEPTIONS
-class AuthError:
+class AuthError(Exception):
     pass
 
 
-class RegisterError:
+class RegisterError(Exception):
     pass
 
 
