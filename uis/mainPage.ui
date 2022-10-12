@@ -23,7 +23,14 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Youtube Downloader</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../icons/app.png</normaloff>../icons/app.png</iconset>
+  </property>
+  <property name="windowOpacity">
+   <double>1.000000000000000</double>
   </property>
   <property name="styleSheet">
    <string notr="true">* {
@@ -42,6 +49,17 @@
 QLabel {
 	color: #37393A;
 }
+
+/* ПО КАКИМ ТО ПРИЧИНАМ НЕ РАБОТАЕТ. ПРИХОДИТСЯ ПЕРЕЧИСЛЯТЬ ПО ИМЕНАМ ЧУТЬ НИЖЕ.
+
+QHBoxLayout &gt; QPushButton {  
+	background-color: #37393A;
+	color: #EAFFDA;
+	border-radius: 15px;
+	border-bottom: 3px solid #26292A;
+	border-right: 3px solid #26292A;
+	padding: 10px;
+} */
 
 #browseButton, #downloadButton, #transferButton{
 	background-color: #37393A;
