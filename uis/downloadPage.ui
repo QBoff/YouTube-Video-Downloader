@@ -48,27 +48,32 @@
 	border-right: 3px solid #D1AA6B;
 }
 
-QComboBox, #urlInput {
+QComboBox {
 	background-color: #4E4187;
+	color: #ADD8DA;
+}
+
+QComboBox QListView {
 	color: #ADD8DA;
 }
 
 
 QLabel, QPushButton {
 	color: #4E4187;
-	font-size: 13px;
 	font-family: Arial, Helvetica, sans-serif;
 }
 
 #urlInput {
 	border: none;
+	background-color: #4E4187;
+	color: #ADD8DA;
 }
 
 #text1 {
-	border: 1px dashed black
+	border: 1px dashed black;
 }
 
-/* Bottom buttons */
+
 #rightSide QPushButton {
 	background-color: #DB2B39;
 	color: #9c0d38;
@@ -80,15 +85,17 @@ QLabel, QPushButton {
 	background-color: #B32430;
 }
 
-/*
-#addToQueueButton::hover {
-	background-color: #B32430;
+#rightSide QPushButton:pressed {
+	color: #A54D68;
+	background-color: #B66F84;
+    border-color:#91707A;
+    border-style: inset;
 }
 
-#downloadButton::hover {
-	background-color: #B32430;
-}
-</string>
+#returnButton {
+	background-color: blue;
+	border: none;
+}</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -140,7 +147,7 @@ QLabel, QPushButton {
          <property name="font">
           <font>
            <family>Arial,Helvetica,sans-serif</family>
-           <pointsize>-1</pointsize>
+           <pointsize>13</pointsize>
           </font>
          </property>
          <property name="text">
@@ -305,11 +312,10 @@ QLabel, QPushButton {
                 <property name="font">
                  <font>
                   <family>Arial,Helvetica,sans-serif</family>
-                  <pointsize>-1</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string>СОКРОВИЩНЫЙ ПЕРЕДОЗ | Мультивселенная Острова Сокровищ</string>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -324,11 +330,10 @@ QLabel, QPushButton {
                 <property name="font">
                  <font>
                   <family>Arial,Helvetica,sans-serif</family>
-                  <pointsize>-1</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string>- Sndk</string>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -415,7 +420,7 @@ QLabel, QPushButton {
             <property name="font">
              <font>
               <family>Arial,Helvetica,sans-serif</family>
-              <pointsize>-1</pointsize>
+              <pointsize>13</pointsize>
              </font>
             </property>
             <property name="text">
@@ -436,7 +441,7 @@ QLabel, QPushButton {
               <property name="font">
                <font>
                 <family>Arial,Helvetica,sans-serif</family>
-                <pointsize>-1</pointsize>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -462,7 +467,7 @@ QLabel, QPushButton {
               <property name="font">
                <font>
                 <family>Arial,Helvetica,sans-serif</family>
-                <pointsize>-1</pointsize>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -509,7 +514,7 @@ QLabel, QPushButton {
               <property name="font">
                <font>
                 <family>Arial,Helvetica,sans-serif</family>
-                <pointsize>-1</pointsize>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -539,7 +544,7 @@ QLabel, QPushButton {
               <property name="font">
                <font>
                 <family>Arial,Helvetica,sans-serif</family>
-                <pointsize>-1</pointsize>
+                <pointsize>11</pointsize>
                </font>
               </property>
               <property name="text">
@@ -591,11 +596,11 @@ QLabel, QPushButton {
             <property name="font">
              <font>
               <family>Arial,Helvetica,sans-serif</family>
-              <pointsize>-1</pointsize>
+              <pointsize>13</pointsize>
              </font>
             </property>
             <property name="text">
-             <string>Error message (if any)</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -617,7 +622,7 @@ QLabel, QPushButton {
             <property name="font">
              <font>
               <family>Arial,Helvetica,sans-serif</family>
-              <pointsize>-1</pointsize>
+              <pointsize>13</pointsize>
              </font>
             </property>
             <property name="text">
@@ -638,7 +643,7 @@ QLabel, QPushButton {
               <property name="font">
                <font>
                 <family>Arial,Helvetica,sans-serif</family>
-                <pointsize>-1</pointsize>
+                <pointsize>13</pointsize>
                </font>
               </property>
               <property name="text">
@@ -657,7 +662,7 @@ QLabel, QPushButton {
               <property name="font">
                <font>
                 <family>Arial,Helvetica,sans-serif</family>
-                <pointsize>-1</pointsize>
+                <pointsize>13</pointsize>
                </font>
               </property>
               <property name="text">
