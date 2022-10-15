@@ -6,19 +6,18 @@ from PyQt5.QtCore import Qt
 from PyQt5 import uic
 
 
-class mainPage(QMainWindow):
+class downloadWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.initUI()
 
     def initUI(self) -> None:
-        uic.loadUi(join('uis', 'mainPage.ui'), self)
-        self.setWindowFlag(Qt.FramelessWindowHint)
-        self.setAttribute(Qt.WA_TranslucentBackground, True)
-
+        uic.loadUi(join('uis', 'downloadPage.ui'), self)
         self.exit.clicked.connect(
             lambda: sys.exit(QApplication.instance().exit()))
         self.minimize.clicked.connect(lambda: self.showMinimized())
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.controlPanel.mouseMoveEvent = self.moveWindow
 
         self.gripSize = 16
@@ -48,6 +47,6 @@ class mainPage(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = mainPage()
+    window = downloadWindow()
     window.show()
     sys.exit(app.exec_())

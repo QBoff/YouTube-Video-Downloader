@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>694</width>
-    <height>371</height>
+    <height>365</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -37,13 +37,11 @@
 	background-color: transparent;
 }
 
-#MainWindow, #centralwidget {
-	background-color: transparent;
-}
-
 #controlPanel, #container {
 	background-color: #58A4B0;
 	border-radius: 26%;
+	border-bottom: 4px solid #427c85;
+	border-right: 4px solid #427c85;
 }
 
 QLabel {
@@ -61,7 +59,7 @@ QHBoxLayout &gt; QPushButton {
 	padding: 10px;
 } */
 
-#browseButton, #downloadButton, #transferButton{
+#browseButton, #downloadButton, #transferButton {
 	background-color: #37393A;
 	color: #EAFFDA;
 	border-radius: 15px;
@@ -307,6 +305,12 @@ videos</string>
              <width>30</width>
              <height>30</height>
             </size>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
            </property>
            <property name="autoRepeat">
             <bool>false</bool>
