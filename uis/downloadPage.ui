@@ -6,9 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>611</width>
-    <height>456</height>
+    <width>776</width>
+    <height>398</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>594</width>
+    <height>398</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>776</width>
+    <height>398</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Youtube Downloader</string>
@@ -49,17 +61,26 @@ QLabel, QPushButton {
 }
 
 #urlInput {
-	border: 1px solid black;
+	border: none;
+}
+
+#text1 {
+	border: 1px dashed black
 }
 
 /* Bottom buttons */
-#addToQueueButton, #downloadButton {
+#rightSide QPushButton {
 	background-color: #DB2B39;
 	color: #9c0d38;
 	border-radius: 7%;
 	border-bottom: 2px solid #9c0d38;
 }
 
+#rightSide QPushButton::hover {
+	background-color: #B32430;
+}
+
+/*
 #addToQueueButton::hover {
 	background-color: #B32430;
 }
