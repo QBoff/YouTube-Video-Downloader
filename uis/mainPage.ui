@@ -37,7 +37,7 @@
 	background-color: transparent;
 }
 
-#controlPanel, #container {
+.QFrame {
 	background-color: #58A4B0;
 	border-radius: 26%;
 	border-bottom: 4px solid #427c85;
@@ -48,18 +48,7 @@ QLabel {
 	color: #37393A;
 }
 
-/* ПО КАКИМ ТО ПРИЧИНАМ НЕ РАБОТАЕТ. ПРИХОДИТСЯ ПЕРЕЧИСЛЯТЬ ПО ИМЕНАМ ЧУТЬ НИЖЕ.
-
-QHBoxLayout &gt; QPushButton {  
-	background-color: #37393A;
-	color: #EAFFDA;
-	border-radius: 15px;
-	border-bottom: 3px solid #26292A;
-	border-right: 3px solid #26292A;
-	padding: 10px;
-} */
-
-#browseButton, #downloadButton, #transferButton {
+QFrame#container QPushButton {
 	background-color: #37393A;
 	color: #EAFFDA;
 	border-radius: 15px;
@@ -68,23 +57,15 @@ QHBoxLayout &gt; QPushButton {
 	padding: 10px
 }
 
-#browseButton::hover {
+QFrame#container QPushButton::hover {
 	background-color: #50595F;
 	border-color: #4D5F6A;
 }
 
-#transferButton::hover {
-	background-color: #50595F;
-	border-color: #4D5F6A;
+QFrame#container QPushButton:pressed {
+	background-color: #74818A;
+	border-color: #7C8A94;
 }
-
-#downloadButton::hover {
-	background-color: #50595F;
-	border-color: #4D5F6A;
-}
-
-
-
 </string>
   </property>
   <widget class="QWidget" name="centralwidget">
