@@ -1,9 +1,11 @@
 import sys
 
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import Qt
 
 from downloadPage import downloadWindow
 from mainPage import mainPage
+from manager import ManagerWindow
 
 
 def switch(_from, _to):
@@ -20,13 +22,20 @@ def switch(_from, _to):
 
 
 if __name__ == '__main__':
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True) #enable highdpi scaling
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True) #use highdpi icons
     app = QApplication(sys.argv)
+
     mainWin = mainPage()
     downloadWin = downloadWindow()
+    managerWin = ManagerWindow()
     mainWin.show()
 
     mainWin.downloadButton.clicked.connect(
         lambda: switch(mainWin, downloadWin))
+    mainWin.browseButton.clicked.connect(
+        lambda: switch(mainWin, managerWin))
+
     downloadWin.returnButton.clicked.connect(
         lambda: switch(downloadWin, mainWin))
 
