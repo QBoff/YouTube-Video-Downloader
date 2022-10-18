@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import uic
 
 
-class ManagerWindow(QMainWindow):
+class ManagerPage(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.initUI()
@@ -48,6 +48,6 @@ class ManagerWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = ManagerWindow()
+    window = ManagerPage()
     window.show()
     sys.exit(app.exec_())

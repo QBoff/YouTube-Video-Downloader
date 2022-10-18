@@ -251,71 +251,56 @@ QLabel, QPushButton {
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QLabel" name="videoPreview">
-            <property name="enabled">
-             <bool>true</bool>
+           <widget class="QStackedWidget" name="leftPageList">
+            <property name="currentIndex">
+             <number>1</number>
             </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>240</width>
-              <height>135</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="pixmap">
-             <pixmap>../icons/previewTest.jpg</pixmap>
-            </property>
-            <property name="scaledContents">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="parseInfo">
-            <item>
-             <widget class="QLabel" name="channelLogo">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>35</width>
-                <height>35</height>
-               </size>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="pixmap">
-               <pixmap>../icons/authorizationLogo.png</pixmap>
-              </property>
-              <property name="scaledContents">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QVBoxLayout" name="videoInfo">
+            <widget class="QWidget" name="videoInfo">
+             <layout class="QVBoxLayout" name="verticalLayout_3">
               <item>
-               <widget class="QLabel" name="videoName">
+               <widget class="QLabel" name="videoPreview">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>304</width>
+                  <height>171</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="pixmap">
+                 <pixmap>../icons/previewTest.jpg</pixmap>
+                </property>
+                <property name="scaledContents">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="videoTitle">
                 <property name="font">
                  <font>
                   <family>Arial,Helvetica,sans-serif</family>
+                  <pointsize>10</pointsize>
                  </font>
                 </property>
                 <property name="text">
                  <string>СОКРОВИЩНЫЙ ПЕРЕДОЗ | Мультивселенная Острова Сокровищ</string>
+                </property>
+                <property name="textFormat">
+                 <enum>Qt::AutoText</enum>
+                </property>
+                <property name="scaledContents">
+                 <bool>false</bool>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -323,17 +308,74 @@ QLabel, QPushButton {
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="channelName">
-                <property name="enabled">
-                 <bool>true</bool>
+               <spacer name="verticalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
                 </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <item>
+                 <widget class="QLabel" name="channelLogo">
+                  <property name="maximumSize">
+                   <size>
+                    <width>35</width>
+                    <height>35</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap>../icons/authorizationLogo.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="channelName">
+                  <property name="font">
+                   <font>
+                    <family>Arial,Helvetica,sans-serif</family>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Sndk</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="placeholderPage">
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <widget class="QLabel" name="alert">
                 <property name="font">
                  <font>
                   <family>Arial,Helvetica,sans-serif</family>
+                  <pointsize>25</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>- Sndk</string>
+                 <string>Video preview will be displayed here</string>
+                </property>
+                <property name="scaledContents">
+                 <bool>true</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -341,21 +383,8 @@ QLabel, QPushButton {
                </widget>
               </item>
              </layout>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
+            </widget>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -424,7 +453,7 @@ QLabel, QPushButton {
              </font>
             </property>
             <property name="text">
-             <string>Paste the video url, make sure that it's valid and download it by selecting the quality and format that you need =)</string>
+             <string>Paste the video url, press enter and download by selecting the quality and format that you need =)</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -455,6 +484,24 @@ QLabel, QPushButton {
                <font>
                 <pointsize>10</pointsize>
                </font>
+              </property>
+              <property name="cursor">
+               <cursorShape>IBeamCursor</cursorShape>
+              </property>
+              <property name="inputMask">
+               <string/>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="placeholderText">
+               <string/>
+              </property>
+              <property name="cursorMoveStyle">
+               <enum>Qt::LogicalMoveStyle</enum>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -634,6 +681,9 @@ QLabel, QPushButton {
            <layout class="QHBoxLayout" name="bottomButtons">
             <item>
              <widget class="QPushButton" name="addToQueueButton">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -649,10 +699,16 @@ QLabel, QPushButton {
               <property name="text">
                <string>Add to queue</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">downloads</string>
+              </attribute>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="downloadButton">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -668,6 +724,9 @@ QLabel, QPushButton {
               <property name="text">
                <string>Download</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">downloads</string>
+              </attribute>
              </widget>
             </item>
            </layout>
@@ -683,4 +742,7 @@ QLabel, QPushButton {
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="downloads"/>
+ </buttongroups>
 </ui>
