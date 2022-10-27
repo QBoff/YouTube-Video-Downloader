@@ -5,7 +5,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5 import uic
+from download_video.video import download_video
 from youtube import getVideoInfo
+# from download_video.video.download_video import DownloadPage
+from pytube import YouTube
 
 
 class DownloadPage(QMainWindow):
@@ -29,6 +32,9 @@ class DownloadPage(QMainWindow):
             grip = QSizeGrip(self)
             grip.resize(self.gripSize, self.gripSize)
             self.grips.append(grip)
+        
+        
+        self.downloadButton.clicked.connect(self.download_video)
 
     def onURLtype(self) -> None:
         url = self.urlInput.text()
@@ -64,6 +70,37 @@ class DownloadPage(QMainWindow):
 
     def mousePressEvent(self, event) -> None:
         self.clickPosition = event.globalPos()
+    
+    def download_video(
+        self,
+        path_to_save="downloaded_video",
+    ) -> str:
+
+        self.download_videolink = self.urlInput.text()
+        self.download_videoresolution = self.qualityInput.currentText()  # get resolution from Interface
+        self.download_videoextension = self.comboBox_2.currentText()  # get extension from Interface
+        # print(resolution, extension)
+        
+        yt = YouTube(self.link)
+        
+            # it's time for Qt part
+        # print("Не удалось нати такую ссылку :( ")
+
+        # !!!!!!
+        video_size = yt.streams.filter(file_extension=self.extension).get_by_resolution(
+            self.resolution).filesize_approx / 1024 / 1024 / 1024  # get the file size in gb
+        # !!!!!!
+        self.alert.setText(str(round(video_size, 5)))
+
+        mp4video = yt.streams.filter(file_extension=self.extension).get_by_resolution(
+            self.resolution)  # filter out all the files with mp4 extension and 720p resolution
+
+        try:
+            mp4video.download(path_to_save)
+        except:
+            print("Downloading error")
+
+        return "ok"
 
 
 if __name__ == '__main__':
