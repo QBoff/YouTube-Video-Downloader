@@ -3,42 +3,6 @@ from enum import Enum as __Enum
 # EXCEPTIONS
 
 
-class AuthError(Exception):
-    def __str__(self):
-        return self.msg
-
-
-class RegisterError(Exception):
-    def __str__(self):
-        return self.msg
-
-
-class InvalidLogin(AuthError):
-    msg = 'Учётной записи не существует'
-
-
-class InvalidPassword(AuthError):
-    msg = 'Неверный пароль'
-
-
-class PasswordFormat(RegisterError):
-    msg = 'Неправильный формат пароля.\nПароль должен состоять минимум из 8 символов\nСреди них должна быть 1 заглавная,\nстрочная буквы и цифра'
-
-
-class EmailFormat(RegisterError):
-    msg = 'Email не распознан.'
-
-
-class WrongSecondPassword(RegisterError):
-    msg = 'Пароли не совпадают'
-
-
-class LoginAlreadyTaken(RegisterError):
-    msg = 'Данный логин уже используется'
-
-
-class EmailAlreadyTaken(RegisterError):
-    msg = 'Email уже зарегистрирован. Восстановить пароль можно по кнопке на странице входа'
 
 # ENUMS
 
