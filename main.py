@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt
 from downloadPage import DownloadPage
 from mainPage import MainPage
 from managerPage import ManagerPage
+from registrationPage import registrationPage
 
 
 def switch(_from, _to):
@@ -28,10 +29,14 @@ if __name__ == '__main__':
                               True)  # use highdpi icons
     app = QApplication(sys.argv)
 
+    register = registrationPage()
     mainWin = MainPage()
     downloadWin = DownloadPage()
     managerWin = ManagerPage()
-    mainWin.show()
+    register.show()
+
+    user = None
+    # Need to know a way of how to wait for a user to register
 
     mainWin.downloadButton.clicked.connect(
         lambda: switch(mainWin, downloadWin))

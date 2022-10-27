@@ -40,7 +40,7 @@ def loginCheck(login: str) -> bool:
             return False
     return True
 
-class MainPage(QWidget):
+class registrationPage(QWidget):
     msgs = {
         'password': 'Password should have at least 8 characters, 1 upper/lowercase letter, digit',
         'login': 'Login should have at least 4 characters and no punctuation symbols',
@@ -52,6 +52,7 @@ class MainPage(QWidget):
         super().__init__()
         self.initUI()
         self.highligtedFiels = list()
+        self.userData = None
 
     def onRegister(self) -> None:
         email = self.emailField.text()
@@ -95,9 +96,7 @@ class MainPage(QWidget):
             with Database('Accounts.db') as db:
                 db.add(email, login, pass1)
                 print('added entry!')
-    
-    def showErr(self, err: str) -> None:
-        pass
+                self.userData = email, login, pass1
 
     def highlight(self, *fieldnames: str) -> None:
         for field in self.highligtedFiels:
@@ -132,6 +131,6 @@ class MainPage(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MainPage()
+    window = registrationPage()
     window.show()
     sys.exit(app.exec_())
