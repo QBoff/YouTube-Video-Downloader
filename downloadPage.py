@@ -32,8 +32,7 @@ class DownloadPage(QMainWindow):
             grip = QSizeGrip(self)
             grip.resize(self.gripSize, self.gripSize)
             self.grips.append(grip)
-        
-        
+
         self.downloadButton.clicked.connect(self.download_video)
 
     def onURLtype(self) -> None:
@@ -70,37 +69,35 @@ class DownloadPage(QMainWindow):
 
     def mousePressEvent(self, event) -> None:
         self.clickPosition = event.globalPos()
-    
+
     def download_video(
         self,
-        path_to_save="downloaded_video",
+        path_to_save="downloaded_video/",
     ) -> str:
 
-        self.download_videolink = self.urlInput.text()
-        self.download_videoresolution = self.qualityInput.currentText()  # get resolution from Interface
-        self.download_videoextension = self.comboBox_2.currentText()  # get extension from Interface
-        # print(resolution, extension)
-        
+        self.link = self.urlInput.text()
+        self.resolution = self.qualityInput.currentText()  # get resolution from Interface
+        self.extension = self.comboBox_2.currentText()  # get extension from Interface
+        self.path_to_save = "downloaded_video/"
+        # print(self.resolution, self.extension)
+
         yt = YouTube(self.link)
-        
-            # it's time for Qt part
+
+        # it's time for Qt part
         # print("Не удалось нати такую ссылку :( ")
 
         # !!!!!!
-        video_size = yt.streams.filter(file_extension=self.extension).get_by_resolution(
-            self.resolution).filesize_approx / 1024 / 1024 / 1024  # get the file size in gb
-        # !!!!!!
-        self.alert.setText(str(round(video_size, 5)))
+        video_size = yt.streams.filter(res="1080p").first(
+        ).filesize_approx / 1024 / 1024 / 1024 / 2  # get the file size in gb
+        # print(video_size)
+        self.sizeText.setText(f"Estimated size: {str(round(video_size, 2))}GB")
 
-        mp4video = yt.streams.filter(file_extension=self.extension).get_by_resolution(
-            self.resolution)  # filter out all the files with mp4 extension and 720p resolution
-
-        try:
-            mp4video.download(path_to_save)
-        except:
-            print("Downloading error")
-
-        return "ok"
+        mp4video = yt.streams.filter(
+            file_extension=self.extension, res=self.resolution)
+        # filter out all the files with mp4 extension and 720p resolution
+        mp4video.first().download(self.path_to_save)
+        # except:
+        #     print("Downloading error")
 
 
 if __name__ == '__main__':
