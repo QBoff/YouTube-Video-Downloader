@@ -33,7 +33,7 @@ if __name__ == '__main__':
     mainWin = MainPage()
     downloadWin = DownloadPage()
     managerWin = ManagerPage()
-    register.show()
+    mainWin.show()
 
     user = None
     # Need to know a way of how to wait for a user to register
