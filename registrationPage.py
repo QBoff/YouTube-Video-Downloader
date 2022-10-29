@@ -4,7 +4,7 @@ from os.path import join
 
 from database import Database
 from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5 import uic
 
 def passwordCheck(password: str) -> bool:
@@ -41,6 +41,8 @@ def loginCheck(login: str) -> bool:
     return True
 
 class registrationPage(QWidget):
+    successfulRegister = pyqtSignal(str)
+
     msgs = {
         'password': 'Password should have at least 8 characters, 1 upper/lowercase letter, digit',
         'login': 'Login should have at least 4 characters and no punctuation symbols',
@@ -97,6 +99,8 @@ class registrationPage(QWidget):
                 db.add(email, login, pass1)
                 print('added entry!')
                 self.userData = email, login, pass1
+
+            self.successfulRegister.emit(login)
 
     def highlight(self, *fieldnames: str) -> None:
         for field in self.highligtedFiels:

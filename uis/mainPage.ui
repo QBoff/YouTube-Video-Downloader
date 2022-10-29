@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>694</width>
-    <height>365</height>
+    <width>986</width>
+    <height>498</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -18,8 +18,8 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>797</width>
-    <height>453</height>
+    <width>1109</width>
+    <height>553</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -54,7 +54,9 @@ QFrame#container QPushButton {
 	border-radius: 15px;
 	border-bottom: 3px solid #26292A;
 	border-right: 3px solid #26292A;
-	padding: 10px
+	padding: 10px;
+	margin-top: 20%;
+	margin-bottom: 20%;
 }
 
 QFrame#container QPushButton::hover {
@@ -228,6 +230,12 @@ QFrame#container QPushButton:pressed {
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QLabel" name="upperText">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="font">
           <font>
            <family>Yu Gothic UI Semibold</family>
@@ -257,9 +265,15 @@ QFrame#container QPushButton:pressed {
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="buttons">
+        <layout class="QHBoxLayout" name="buttons" stretch="1,1,0">
          <item>
           <widget class="QPushButton" name="browseButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -312,6 +326,12 @@ videos</string>
          </item>
          <item>
           <widget class="QPushButton" name="downloadButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -358,6 +378,12 @@ videos</string>
          </item>
          <item>
           <widget class="QPushButton" name="transferButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -412,6 +438,12 @@ videos</string>
        </item>
        <item>
         <widget class="QLabel" name="lowerText">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>You are using an actual version of the software, no need to update yet =)</string>
          </property>

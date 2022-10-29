@@ -1,12 +1,16 @@
 import sys
 
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSlot
 
 from downloadPage import DownloadPage
 from mainPage import MainPage
 from managerPage import ManagerPage
 from registrationPage import registrationPage
+
+
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 
 def switch(_from, _to):
@@ -23,21 +27,16 @@ def switch(_from, _to):
 
 
 if __name__ == '__main__':
-    # enable highdpi scaling
-    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps,
-                              True)  # use highdpi icons
     app = QApplication(sys.argv)
 
+    # Pages
     register = registrationPage()
     mainWin = MainPage()
     downloadWin = DownloadPage()
     managerWin = ManagerPage()
-    mainWin.show()
 
-    user = None
-    # Need to know a way of how to wait for a user to register
-
+    # Initits
+    register.show()
     mainWin.downloadButton.clicked.connect(
         lambda: switch(mainWin, downloadWin))
     mainWin.browseButton.clicked.connect(
@@ -45,5 +44,12 @@ if __name__ == '__main__':
 
     downloadWin.returnButton.clicked.connect(
         lambda: switch(downloadWin, mainWin))
+        
+    @pyqtSlot(str)
+    def successfulRegistration(login):
+        mainWin.upperText.setText(f'Welcome, {login}! What brings you here today?')
+        switch(register, mainWin)
+
+    register.successfulRegister.connect(successfulRegistration)
 
     sys.exit(app.exec_())
