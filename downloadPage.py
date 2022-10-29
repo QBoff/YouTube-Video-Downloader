@@ -5,9 +5,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5 import uic
-from download_video.video import download_video
 from youtube import getVideoInfo
-# from download_video.video.download_video import DownloadPage
 from pytube import YouTube
 
 
@@ -34,6 +32,32 @@ class DownloadPage(QMainWindow):
             self.grips.append(grip)
 
         self.downloadButton.clicked.connect(self.download_video)
+    
+    # the logic of this page begins
+    def download_video(self) -> str:
+
+        self.link = self.urlInput.text()
+        self.resolution = self.qualityInput.currentText()  # get resolution from Interface
+        self.extension = self.comboBox_2.currentText()  # get extension from Interface
+        self.path_to_save = "downloaded_video/"
+
+        try:
+            yt = YouTube(self.link)  # if link is correct and this video is on youtube
+        except:
+            print("Link isn't valid")
+
+        video_size = yt.streams.filter(res="1080p").first(
+        ).filesize_approx / 1024 / 1024 / 1024 / 2  # get the file size in gb
+
+        self.sizeText.setText(f"Estimated size: {str(round(video_size, 2))}GB")
+
+        mp4video = yt.streams.filter(
+            file_extension=self.extension, res=self.resolution)
+        
+        try:    
+            mp4video.first().download(self.path_to_save)
+        except:
+            print("Downloading error")
 
     def onURLtype(self) -> None:
         url = self.urlInput.text()
@@ -69,35 +93,6 @@ class DownloadPage(QMainWindow):
 
     def mousePressEvent(self, event) -> None:
         self.clickPosition = event.globalPos()
-
-    def download_video(
-        self,
-        path_to_save="downloaded_video/",
-    ) -> str:
-
-        self.link = self.urlInput.text()
-        self.resolution = self.qualityInput.currentText()  # get resolution from Interface
-        self.extension = self.comboBox_2.currentText()  # get extension from Interface
-        self.path_to_save = "downloaded_video/"
-        # print(self.resolution, self.extension)
-
-        yt = YouTube(self.link)
-
-        # it's time for Qt part
-        # print("Не удалось нати такую ссылку :( ")
-
-        # !!!!!!
-        video_size = yt.streams.filter(res="1080p").first(
-        ).filesize_approx / 1024 / 1024 / 1024 / 2  # get the file size in gb
-        # print(video_size)
-        self.sizeText.setText(f"Estimated size: {str(round(video_size, 2))}GB")
-
-        mp4video = yt.streams.filter(
-            file_extension=self.extension, res=self.resolution)
-        # filter out all the files with mp4 extension and 720p resolution
-        mp4video.first().download(self.path_to_save)
-        # except:
-        #     print("Downloading error")
 
 
 if __name__ == '__main__':
