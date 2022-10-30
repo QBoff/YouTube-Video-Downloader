@@ -61,7 +61,7 @@ class Database:
             Returns specialized str to indicate the result.
         """
         retrievedPass = self.cursor.execute(f"""
-            SELECT password
+            SELECT password, login
             FROM Entries
             WHERE email = "{email}" OR login = "{login}"
         """).fetchone()
@@ -71,11 +71,11 @@ class Database:
             salt = bytes.fromhex(retrievedPass[0][64:])
             
             if self.hashPlaintext(password, salt)[0].hex() == key:
-                return 'login successful'
+                return True, retrievedPass[1]
             else:
-                return 'wrong password'
+                return False, 'wrong password'
         else:
-            return 'notfound'
+            return False, 'not found'
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.db.close()

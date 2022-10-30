@@ -3,9 +3,11 @@ import sys
 from os.path import join
 
 from database import Database
+from datamanager import Manager
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5 import uic
+
 
 def passwordCheck(password: str) -> bool:
     if len(password) < 8:
@@ -19,10 +21,11 @@ def passwordCheck(password: str) -> bool:
             hasUpper = True
         elif letter.isdigit():
             hasDigit = True
-        
+
         if hasLower and hasUpper and hasDigit:
             return True
     return False
+
 
 def emailCheck(email: str) -> bool:
     hasNoSpace = ' ' not in email
@@ -30,6 +33,7 @@ def emailCheck(email: str) -> bool:
     hasDotAfterAT = email.rfind('@') < email.rfind('.')
 
     return hasNoSpace and hasOneAT and hasDotAfterAT
+
 
 def loginCheck(login: str) -> bool:
     if len(login) < 4:
@@ -40,7 +44,8 @@ def loginCheck(login: str) -> bool:
             return False
     return True
 
-class registrationPage(QWidget):
+
+class RegistrationPage(QWidget):
     successfulRegister = pyqtSignal(str)
 
     msgs = {
@@ -73,7 +78,8 @@ class registrationPage(QWidget):
                 loginExists = db.check(login=login)
 
             if emailExists and loginExists:
-                raise AssertionError('This account already exists, do you wish to login?')
+                raise AssertionError(
+                    'This account already exists, do you wish to login?')
             elif emailExists:
                 raise AssertionError('This email is already used')
             elif loginExists:
@@ -88,19 +94,20 @@ class registrationPage(QWidget):
             else:
                 fields = msg.split()[1].replace('account', 'login+email')
                 self.highlight(*fields.split('+'))
-                    
+
                 self.errDisplay.setText(msg)
         else:  # In case it registered and need to move forward
             self.highlight()
             self.errDisplay.setMaximumHeight(0)
             self.errDisplay.setText('')
 
+            self.successfulRegister.emit(login)
             with Database('Accounts.db') as db:
                 db.add(email, login, pass1)
                 print('added entry!')
                 self.userData = email, login, pass1
 
-            self.successfulRegister.emit(login)
+            Manager.createUserDirectory(login)
 
     def highlight(self, *fieldnames: str) -> None:
         for field in self.highligtedFiels:
@@ -109,7 +116,8 @@ class registrationPage(QWidget):
 
         if fieldnames:
             for field in fieldnames:
-                getattr(self, field + "Field").setStyleSheet('border: 2px solid red;')
+                getattr(self, field +
+                        "Field").setStyleSheet('border: 2px solid red;')
                 self.highligtedFiels.append(field)
 
     def initUI(self) -> None:
@@ -135,6 +143,6 @@ class registrationPage(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = registrationPage()
+    window = RegistrationPage()
     window.show()
     sys.exit(app.exec_())

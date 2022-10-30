@@ -4777,3 +4777,6 @@ venv/Lib/site-packages/soupsieve-2.3.2.post1.dist-info/license_files/LICENSE.md
 venv/Scripts/pylupdate5.exe
 venv/Scripts/pyrcc5.exe
 venv/Scripts/pyuic5.exe
+start.bat
+Accounts.db
+
