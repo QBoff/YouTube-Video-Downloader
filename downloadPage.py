@@ -7,6 +7,8 @@ from PyQt5.QtGui import QPixmap
 from PyQt5 import uic
 from youtube import getVideoInfo
 from pytube import YouTube
+from multiprocessing import Process
+from threading import Thread
 
 
 class DownloadPage(QMainWindow):
@@ -31,10 +33,10 @@ class DownloadPage(QMainWindow):
             grip.resize(self.gripSize, self.gripSize)
             self.grips.append(grip)
 
-        self.downloadButton.clicked.connect(self.download_video)
+        self.downloadButton.clicked.connect(self.download)
     
     # the logic of this page begins
-    def download_video(self) -> str:
+    def _download_video(self) -> str:
 
         self.link = self.urlInput.text()
         self.resolution = self.qualityInput.currentText()  # get resolution from Interface
@@ -58,6 +60,13 @@ class DownloadPage(QMainWindow):
             mp4video.first().download(self.path_to_save)
         except:
             print("Downloading error")
+        print("ok")
+    
+    def download(self):
+        Thread(
+            target=self._download_video, daemon=True
+        ).start()
+        
 
     def onURLtype(self) -> None:
         url = self.urlInput.text()
