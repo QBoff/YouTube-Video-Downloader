@@ -621,6 +621,11 @@ QLabel, QPushButton {
                 <string>avi</string>
                </property>
               </item>
+              <item>
+               <property name="text">
+                <string>str</string>
+               </property>
+              </item>
              </widget>
             </item>
             <item>
