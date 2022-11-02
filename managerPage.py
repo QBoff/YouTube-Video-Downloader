@@ -1,9 +1,48 @@
 import sys
 from os.path import join
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip, QLabel, QSizePolicy, QWidget
 from PyQt5.QtCore import Qt
 from PyQt5 import uic
+from datamanager import Manager, Video
+
+class AspectWidget(QWidget):
+    '''
+    A widget that maintains its aspect ratio.
+    '''
+    def __init__(self, *args, ratio=4/3, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ratio = ratio
+        self.adjusted_to_size = (-1, -1)
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
+
+    def resizeEvent(self, event):
+        size = event.size()
+        if size == self.adjusted_to_size:
+            # Avoid infinite recursion. I suspect Qt does this already,
+            # but it's best to be safe.
+            return
+        self.adjusted_to_size = size
+
+        full_width = size.width()
+        full_height = size.height()
+        width = min(full_width, full_height * self.ratio)
+        height = min(full_height, full_width / self.ratio)
+
+        h_margin = round((full_width - width) / 2)
+        v_margin = round((full_height - height) / 2)
+
+        self.setContentsMargins(h_margin, v_margin, h_margin, v_margin)
+
+
+class VideoPreview(QWidget):
+    def __init__(self, *args, video, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.initUI()
+        self.video = video
+    
+    def initUI(self):
+        uic.loadUi(join('uis', 'videoWidgetItem.ui'), self)
 
 
 class ManagerPage(QMainWindow):
@@ -48,6 +87,14 @@ class ManagerPage(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    with Manager('N1qro') as folder:
+        video = folder.getVideos()[0]
+        video2 = folder.getVideos()[1]
     window = ManagerPage()
+
+    template1 = VideoPreview(window.contents, video=video)
+    template2 = VideoPreview(window.contents, video=video2)
+    template1.move(30, 30)
+
     window.show()
     sys.exit(app.exec_())
