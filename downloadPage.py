@@ -15,13 +15,13 @@ class DownloadPage(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.initUI()
+        self.activeURL = None
 
     def initUI(self) -> None:
         uic.loadUi(join('uis', 'downloadPage.ui'), self)
         self.exit.clicked.connect(
             lambda: sys.exit(QApplication.instance().exit()))
         self.minimize.clicked.connect(lambda: self.showMinimized())
-        self.urlInput.returnPressed.connect(self.onURLtype)
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.controlPanel.mouseMoveEvent = self.moveWindow
@@ -33,8 +33,10 @@ class DownloadPage(QMainWindow):
             grip.resize(self.gripSize, self.gripSize)
             self.grips.append(grip)
 
+        # After general stuff
         self.downloadButton.clicked.connect(self.download_video)
-
+        self.searchButton.clicked.connect(self.onURLtype)
+    
     # the logic of this page begins
     def _download_video_or_audio(self) -> str:
 
@@ -111,12 +113,27 @@ class DownloadPage(QMainWindow):
 
                 pixmap = QPixmap(data['thumbnail'])
                 self.videoPreview.setPixmap(pixmap)
-            else:  # If parser couldn't load at least some data from page.
+                self.setSelectorButtonsEnabled(True)
+            else:  # If url has no video in it.
                 self.leftPageList.setCurrentWidget(self.placeholderPage)
                 self.alert.setText('Something went wrong. Type in other URL')
+                self.setSelectorButtonsEnabled(False)
         else:
             self.leftPageList.setCurrentWidget(self.placeholderPage)
             self.alert.setText('This is not a valid youtube url!')
+            self.setSelectorButtonsEnabled(False)
+
+    def setSelectorButtonsEnabled(self, state: bool) -> None:
+        self.videoButton.setEnabled(state)
+        self.audioButton.setEnabled(state)
+        self.subtitlesButton.setEnabled(state)
+        if state:
+            self.videoButton.setChecked(True)
+            self.audioButton.setChecked(True)
+        else:
+            self.videoButton.setChecked(False)
+            self.audioButton.setChecked(False)
+            self.subtitlesButton.setChecked(False)
 
     def resizeEvent(self, event) -> None:
         QMainWindow.resizeEvent(self, event)
