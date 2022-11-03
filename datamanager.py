@@ -63,7 +63,7 @@ class Manager:
             raise ValueError('Passed argument is not subtitles')
         self.data['Subtitles'].append(subtitles)
 
-    def getVideos(self, /, sortKey=None, filterBy=None) -> list:
+    def getVideos(self, *, sortKey=None, filterBy=None) -> list:
         videos = self.data['Videos']
         if filterBy is not None:
             videos = list(filter(filterBy, videos))
@@ -71,7 +71,7 @@ class Manager:
             videos.sort(key=sortKey)
         return videos
 
-    def getAudio(self, /, sortKey=None, filterBy=None) -> list:
+    def getAudio(self, *, sortKey=None, filterBy=None) -> list:
         audio = self.data['Audio']
         if filterBy is not None:
             audio = filter(filterBy, audio)
