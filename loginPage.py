@@ -59,6 +59,8 @@ class LoginPage(QWidget):
         self.minimize.clicked.connect(lambda: self.showMinimized())
         self.controlPanel.mouseMoveEvent = self.moveWindow
         self.loginButton.clicked.connect(self.onLogin)
+        self.loginField.returnPressed.connect(lambda: self.passwordField.setFocus())
+        self.passwordField.returnPressed.connect(self.onLogin)
 
     def moveWindow(self, event) -> None:
         # if not self.isMaximized():

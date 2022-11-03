@@ -131,6 +131,11 @@ class RegistrationPage(QWidget):
         self.controlPanel.mouseMoveEvent = self.moveWindow
         self.registerButton.clicked.connect(self.onRegister)
 
+        self.emailField.returnPressed.connect(lambda: self.loginField.setFocus())
+        self.loginField.returnPressed.connect(lambda: self.passwordField.setFocus())
+        self.passwordField.returnPressed.connect(lambda: self.password2Field.setFocus())
+        self.password2Field.returnPressed.connect(self.onRegister)
+
     def moveWindow(self, event) -> None:
         # if not self.isMaximized():
         self.move(self.pos() + event.globalPos() - self.clickPosition)
