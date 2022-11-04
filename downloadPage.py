@@ -6,9 +6,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5 import uic
 from youtube import getVideoInfo
-from pytube import YouTube
+from pytube import YouTube, Playlist
 from threading import Thread
 from youtube_transcript_api import YouTubeTranscriptApi
+from bs4 import BeautifulSoup
+import requests
 
 
 class DownloadPage(QMainWindow):
@@ -36,31 +38,33 @@ class DownloadPage(QMainWindow):
         # After general stuff
         self.downloadButton.clicked.connect(self.download_video)
         self.searchButton.clicked.connect(self.onURLtype)
-    
+        self.addToQueueButton.clicked.connect(self.download_playlist)
+
     # the logic of this page begins
-    def _download_video_or_audio(self) -> str:
-        
+    def _download_video_or_audio(self, link=None, res=None, ext_v=None) -> str:
+
         self.path_to_save_video = join("downloaded_video")
         self.path_to_save_audio = join("downloaded_audio")
         self.path_to_save_subtitles = join("download_subtitles")
 
-        self.link = self.urlInput.text()
-        self.extension_video = None
+        self.link = self.urlInput.text() if link is None else link
+        self.resolution = None if res is None else res
+        self.extension_video = None if ext_v is None else ext_v
         self.extension_audio = None
         self.extension_sub = None
         self.name_of_video = ""
-        
+
         # get extension from Interface
         if self.videoButton.isChecked():
             self.extension_video = "mp4"
             self.resolution = self.qualityInput.currentText()  # get resolution from Interface
-            
+
         if self.audioButton.isChecked():
             self.extension_audio = "mp3"
-            
+
         if self.subtitlesButton.isChecked():
             self.extension_sub = "str"
-            
+
         try:
             # if link is correct and this video is on youtube
             yt = YouTube(self.link)
@@ -68,7 +72,7 @@ class DownloadPage(QMainWindow):
         except:
             print("Link isn't valid")
 
-        video_size = yt.streams.filter(res="1080p").first(
+        video_size = yt.streams.filter(res=self.resolution).first(
         ).filesize_approx / 1024 / 1024 / 1024 / 2  # get the file size in gb
 
         self.sizeText.setText(f"Estimated size: {str(round(video_size, 2))}GB")
@@ -93,10 +97,10 @@ class DownloadPage(QMainWindow):
                 except:
                     print("Your audio has already been uploaded")
                     remove(join(self.path_to_save_audio, audio))
-                    
+
             except:
                 print("Download error")
-                
+
         if self.extension_sub == "str":
             data = YouTubeTranscriptApi.get_transcript(
                 self.url_processign(self.link),
@@ -105,7 +109,7 @@ class DownloadPage(QMainWindow):
             name_for_file = f"{self.name_of_video}(subtitles)"
             try:
                 with open(join(self.path_to_save_subtitles, f"{name_for_file}.str"), "w", encoding="utf-8") as file:
-                    
+
                     for item in data:
                         # if item starts with [ it's not our stuff :)
                         print(item)
@@ -119,11 +123,30 @@ class DownloadPage(QMainWindow):
                             file.write(item["text"] + " |" + time + "|" + "\n")
             except:
                 print("Your subtitles has already been uploaded")
-                            
+
+    def _download_your_playlist(self):
+        self.path_to_save_video = join("downloaded_video")
+        self.path_to_save_audio = join("downloaded_audio")
+        self.path_to_save_subtitles = join("download_subtitles")
+
+        link = self.urlInput.text()
+        playList = Playlist(link)
+        print(playList.title)
+        
+        for i in playList:
+            Thread(
+                target=self._download_video_or_audio(link=i, res="360p", ext_v="mp4"), daemon=True
+            )
+    
+    def download_playlist(self):
+        Thread(
+            target=self._download_your_playlist, daemon=True
+        ).start()
+        
 
     def download_video(self):
         Thread(
-            target=self._download_video_or_audio, daemon=True
+            target=self._download_video_or_audio(), daemon=True
         ).start()
 
     def url_processign(self, url) -> str:
