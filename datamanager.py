@@ -30,41 +30,75 @@ class Subtitles:
     downloadDate: datetime = datetime.now()
 
 
+class Profile:
+    def __init__(self, userLogin) -> None:
+        self.userLogin = userLogin
+        self.videos = list()
+        self.audio = list()
+        self.subtitles = list()
+        self.settings = self.DefaultSettings(userLogin)
+
+    @staticmethod
+    def DefaultSettings(userLogin) -> dict:
+        settings = {
+            'directories': {
+                'home': userLogin,
+                'video': os.path.join(userLogin, 'Videos'),
+                'audio': os.path.join(userLogin, 'Audio'),
+                'subtitles': os.path.join(userLogin, 'Subtitles')
+            },
+
+            'preferredQuality': '1080p'
+        }
+
+        return settings
+
+
 class Manager:
     dictionaryKeys = 'Videos', 'Audio', 'Subtitles'
 
     def __init__(self, userLogin) -> None:
         if not os.path.exists(userLogin):
             raise ValueError('User directory do not exist')
+        self.allProfiles = self.loadProfiles()
         self.userLogin = userLogin
-        self.filePath = os.path.join(userLogin, 'hashmap.pkl')
 
     @classmethod
-    def createUserDirectory(cls, userLogin) -> None:
-        if os.path.exists(userLogin):
-            raise FileExistsError('User directory already initialized')
-        os.makedirs(userLogin)
-        emptyDict = {key: list() for key in cls.dictionaryKeys}
-        with open(os.path.join(userLogin, 'hashmap.pkl'), 'wb') as dataFile:
-            pickle.dump(emptyDict, dataFile, pickle.HIGHEST_PROTOCOL)
+    def createUserDirectory(cls, userLogin: str) -> None:
+        allProfiles = cls.loadProfiles()
+        newProfile = Profile(userLogin)
+
+        allProfiles[userLogin] = newProfile
+        for dirPath in newProfile.settings['directories'].values():
+            os.makedirs(dirPath)
+
+        with open('profiles.pkl', 'wb') as profileFile:
+            pickle.dump(allProfiles, profileFile, pickle.HIGHEST_PROTOCOL)
+
+    @classmethod
+    def loadProfiles(cls) -> list:
+        if os.path.exists('profiles.pkl'):
+            with open('profiles.pkl', 'rb') as profiles:
+                return pickle.load(profiles)
+        return dict()
 
     def addVideo(self, video) -> None:
         if not isinstance(video, Video):
             raise ValueError('Passed argument is not a video')
-        self.data['Videos'].append(video)
+        self.activeProfile.videos.append(video)
 
     def addAudio(self, audio) -> None:
         if not isinstance(audio, Audio):
             raise ValueError('Passed argument is not an audio')
-        self.data['Audio'].append(audio)
+        self.activeProfile.audio.append(audio)
 
     def addSubtitles(self, subtitles) -> None:
         if not isinstance(subtitles, Subtitles):
             raise ValueError('Passed argument is not subtitles')
-        self.data['Subtitles'].append(subtitles)
+        self.activeProfile.subtitles.append(subtitles)
 
     def getVideos(self, *, sortKey=None, filterBy=None) -> list:
-        videos = self.data['Videos']
+        videos = self.activeProfile.videos
         if filterBy is not None:
             videos = list(filter(filterBy, videos))
         if sortKey is not None:
@@ -72,7 +106,7 @@ class Manager:
         return videos
 
     def getAudio(self, *, sortKey=None, filterBy=None) -> list:
-        audio = self.data['Audio']
+        audio = self.activeProfile.audio
         if filterBy is not None:
             audio = filter(filterBy, audio)
         if sortKey is not None:
@@ -80,14 +114,14 @@ class Manager:
         return audio
 
     def __enter__(self):
-        if not os.path.exists(self.filePath):
-            raise FileNotFoundError("Couldn't find the hashmap")
-        with open(self.filePath, 'rb') as dataFile:
-            self.data = pickle.load(dataFile)
+        self.activeProfile: Profile = self.allProfiles[self.userLogin]
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        with open(self.filePath, 'wb') as dataFile:
-            pickle.dump(self.data, dataFile, pickle.HIGHEST_PROTOCOL)
+        self.allProfiles[self.userLogin] = self.activeProfile
+
+        with open('profiles.pkl', 'wb') as profiles:
+            pickle.dump(self.allProfiles, profiles, pickle.HIGHEST_PROTOCOL)
+
         if exc_val:
             raise

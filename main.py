@@ -18,14 +18,6 @@ QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    # Pages
-    registerWin = RegistrationPage()
-    mainWin = MainPage()
-    downloadWin = DownloadPage()
-    managerWin = ManagerPage()
-    loginWin = LoginPage()
-
-    active = registerWin
     def switch(_to):
         global active
         lastPos = active.pos()
@@ -38,7 +30,15 @@ if __name__ == '__main__':
         active.hide()
         active = _to
 
+    # Pages
+    registerWin = RegistrationPage()
+    mainWin = MainPage()
+    downloadWin = DownloadPage()
+    managerWin = ManagerPage()
+    loginWin = LoginPage()
+
     # Initits
+    active = registerWin
     active.show()
 
     loginWin.registerButton.clicked.connect(
@@ -59,6 +59,8 @@ if __name__ == '__main__':
         mainWin.upperText.setText(
             f'Welcome, {login}! What brings you here today?')
         switch(mainWin)
+        registerWin.close()
+        loginWin.close()
 
     registerWin.successfulRegister.connect(successfulLogin)
     loginWin.successfulLogin.connect(successfulLogin)
