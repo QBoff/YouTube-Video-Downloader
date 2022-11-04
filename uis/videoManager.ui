@@ -196,26 +196,36 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>439</width>
-               <height>297</height>
+               <width>445</width>
+               <height>263</height>
               </rect>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_4">
-              <item>
-               <widget class="QPushButton" name="pushButton_2">
-                <property name="text">
-                 <string>PushButton</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButton">
-                <property name="text">
-                 <string>PushButton</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QPushButton" name="pushButton_2">
+              <property name="geometry">
+               <rect>
+                <x>6</x>
+                <y>75</y>
+                <width>79</width>
+                <height>24</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>PushButton</string>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="pushButton">
+              <property name="geometry">
+               <rect>
+                <x>6</x>
+                <y>168</y>
+                <width>79</width>
+                <height>24</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>PushButton</string>
+              </property>
+             </widget>
             </widget>
            </widget>
           </item>
