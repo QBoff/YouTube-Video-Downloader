@@ -1,7 +1,7 @@
 import sys
 from os.path import join
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip, QLabel, QSizePolicy, QWidget
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QMainWindow, QSizeGrip, QLabel, QSizePolicy, QWidget
 from PyQt5.QtCore import Qt
 from PyQt5 import uic
 from datamanager import Manager, Video
@@ -91,10 +91,13 @@ if __name__ == "__main__":
         video = folder.getVideos()[0]
         video2 = folder.getVideos()[1]
     window = ManagerPage()
-
+    v_layout= QVBoxLayout(window.contents)
     template1 = VideoPreview(window.contents, video=video)
     template2 = VideoPreview(window.contents, video=video2)
-    template1.move(30, 30)
+    v_layout.addWidget(template1)
+    v_layout.addWidget(window.pushButton)
+    v_layout.addWidget(template2)
+    v_layout.addWidget(window.pushButton_2)
 
     window.show()
     sys.exit(app.exec_())
