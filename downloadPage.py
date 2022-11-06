@@ -56,7 +56,7 @@ class DownloadPage(QMainWindow):
 
         self.searchButton.clicked.connect(self.onURLtype)
         self.qualityInput.currentTextChanged.connect(self.calculateSize)
-        self.downloads.buttonClicked.connect(self.onDownload)
+        self.downloads.buttonClicked.connect(self.download_video)
 
     def onDownload(self, info):
         if self.activeSession:
@@ -67,7 +67,7 @@ class DownloadPage(QMainWindow):
             operation = 'download' if info.objectName().startswith('download') else 'queue'
             isPlaylist = isinstance(self.activeSession, Playlist)
             
-            self.download_video()
+            # self.download_video()
 
     def _download_video_or_audio(self, link=None, res=None, ext_v=None) -> str:
 
