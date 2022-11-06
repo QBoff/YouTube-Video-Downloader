@@ -11,11 +11,30 @@ from threading import Thread
 from youtube_transcript_api import YouTubeTranscriptApi
 
 
+def translateSize(size: int) -> str:
+    dataTypes = 'B', 'KB', 'MB', 'GB'
+    currentIndex = 0
+
+    while currentIndex < len(dataTypes):
+        nextSize = size / 1024
+        if nextSize > 1:
+            currentIndex += 1
+            size = nextSize
+        else:
+            break
+
+    return str(round(size, 2)) + dataTypes[currentIndex]
+
+
+def url_processign(self, url) -> str:
+    return "=".join(url.split('=')[1:])
+
+
 class DownloadPage(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.initUI()
-        self.activeURL = None
+        self.activeSession = None
 
     def initUI(self) -> None:
         uic.loadUi(join('uis', 'downloadPage.ui'), self)
@@ -33,11 +52,21 @@ class DownloadPage(QMainWindow):
             grip.resize(self.gripSize, self.gripSize)
             self.grips.append(grip)
 
-        self.downloadButton.clicked.connect(self.download_video)
+        # self.downloadButton.clicked.connect(self.download_video)
         self.searchButton.clicked.connect(self.onURLtype)
-        self.addToQueueButton.clicked.connect(self.download_playlist)
+        # self.addToQueueButton.clicked.connect(self.download_playlist)
+        self.qualityInput.currentTextChanged.connect(self.calculateSize)
+        self.downloads.buttonClicked.connect(self.onDownload)
 
-    # the logic of this page begins
+    def onDownload(self, info):
+        if self.activeSession:
+            video = self.videoButton.isChecked()
+            audio = self.audioButton.isChecked()
+            subtitles = self.subtitlesButton.isChecked()
+            operation = 'download' if info.objectName().startswith('download') else 'queue'
+            print(video, audio, subtitles, operation)
+            
+
     def _download_video_or_audio(self, link=None, res=None, ext_v=None) -> str:
 
         self.path_to_save_video = join("downloaded_video")
@@ -66,7 +95,7 @@ class DownloadPage(QMainWindow):
             # if link is correct and this video is on youtube
             yt = YouTube(self.link)
             self.name_of_video = yt.title
-            
+
             video_size = yt.streams.filter(res=self.resolution).first(
             ).filesize_approx / 1024 / 1024 / 1024 / 2
         except:
@@ -103,7 +132,7 @@ class DownloadPage(QMainWindow):
 
         if self.extension_sub == "str":
             data = YouTubeTranscriptApi.get_transcript(
-                self.url_processign(self.link),
+                url_processign(self.link),
                 ('en', 'ru')
             )
             name_for_file = f"{self.name_of_video}(subtitles)"
@@ -133,30 +162,42 @@ class DownloadPage(QMainWindow):
         try:
             playList = Playlist(link)
             # print(playList.title)
-            
+
             for i in playList:
                 Thread(
                     target=self._download_video_or_audio(link=i, res="360p", ext_v="mp4"), daemon=True
                 )
         except:
             print("Link isn't valid")
-    
+
     def download_playlist(self):
         Thread(
             target=self._download_your_playlist, daemon=True
         ).start()
-        
+
     def download_video(self):
         Thread(
             target=self._download_video_or_audio(), daemon=True
         ).start()
 
-    def url_processign(self, url) -> str:
-        return "=".join(url.split('=')[1:])
+    def calculateSize(self, quality) -> None:
+        if self.activeSession is not None:
+            size = self.activeSession.streams.filter(resolution=quality).first().filesize
+            self.sizeText.setText(f'Estimated size: {translateSize(size)}')
+
+    def populateResolutions(self) -> None:
+        if self.activeSession is not None:
+            allRes = {v.resolution for v in self.activeSession.streams.filter(only_video=True) if v.resolution}
+            resolutions = sorted(allRes, key=lambda x: -int(x[:-1]))
+            
+            self.qualityInput.clear()
+            self.qualityInput.addItems(resolutions)
 
     def onURLtype(self) -> None:
         url = self.urlInput.text()
         session = getYTSession(url)
+        self.activeSession = session
+
         if session is not None:
             preview = QImage.fromData(downloadPreview(session.thumbnail_url))
             pixmap = QPixmap.fromImage(preview)
@@ -165,6 +206,7 @@ class DownloadPage(QMainWindow):
             self.channelName.setText(session.author.upper())
             self.videoPreview.setPixmap(pixmap)
             self.leftPageList.setCurrentWidget(self.videoInfo)
+            self.populateResolutions()
             self.setSelectorButtonsEnabled(True)
         else:
             self.leftPageList.setCurrentWidget(self.placeholderPage)
