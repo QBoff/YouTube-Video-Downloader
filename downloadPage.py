@@ -1,5 +1,6 @@
 import sys
 import asyncio
+from asyncqt import QEventLoop, asyncSlot
 from os.path import join, splitext
 from os import rename, remove
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
@@ -10,8 +11,6 @@ from youtube import downloadPreview, getYTSession
 from pytube import YouTube, Playlist
 from threading import Thread
 from youtube_transcript_api import YouTubeTranscriptApi
-from datamanager import Manager
-# from managerPage import Manager
 
 
 def translateSize(size: int) -> str:
@@ -56,8 +55,9 @@ class DownloadPage(QMainWindow):
             self.grips.append(grip)
 
         self.searchButton.clicked.connect(self.onURLtype)
-        self.qualityInput.currentTextChanged.connect(lambda quality: asyncio.run(self.calculateSize(quality)))
+        self.qualityInput.currentTextChanged.connect(self.calculateSize)
         self.downloads.buttonClicked.connect(self.download_video)
+
 
     def onDownload(self, info):
         if self.activeSession:
@@ -186,7 +186,7 @@ class DownloadPage(QMainWindow):
             target=self._download_video_or_audio(), daemon=True
         ).start()
 
-    async def calculateSize(self, quality) -> None:
+    def calculateSize(self, quality) -> None:
         if isinstance(self.activeSession, YouTube):
             size = self.activeSession.streams.filter(
                 resolution=quality).first().filesize
@@ -203,7 +203,8 @@ class DownloadPage(QMainWindow):
             self.qualityInput.clear()
             self.qualityInput.addItems(resolutions)
 
-    def onURLtype(self) -> None:
+    @asyncSlot()
+    async def onURLtype(self) -> None:
         url = self.urlInput.text()
         session = getYTSession(url)
         self.activeSession = session
@@ -268,5 +269,10 @@ fullpath = join(path, f"{filename}.str")
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = DownloadPage()
+
+    loop = QEventLoop(app)
+    asyncio.set_event_loop(loop)
+
     window.show()
-    sys.exit(app.exec_())
+    with loop:
+        sys.exit(loop.run_forever())
