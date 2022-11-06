@@ -1,5 +1,4 @@
 import requests
-from furl import furl
 from pytube import YouTube, Playlist
 from pytube.exceptions import VideoUnavailable, RegexMatchError
 
@@ -27,8 +26,3 @@ def getYTSession(url: str) -> YouTube | Playlist | None:
     except (VideoUnavailable, RegexMatchError, AssertionError, KeyError):
         return None
     return session
-
-
-pl = Playlist('https://www.youtube.com/watch?v=P6y4lEI-33E&list=PLvXNXbRfDbwUrABDwo2snOhDqMh_KruzC')
-
-print(pl.videos[0].title)

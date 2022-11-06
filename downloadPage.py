@@ -9,7 +9,6 @@ from youtube import downloadPreview, getYTSession
 from pytube import YouTube, Playlist
 from threading import Thread
 from youtube_transcript_api import YouTubeTranscriptApi
-import furl
 
 
 def translateSize(size: int) -> str:
@@ -64,6 +63,7 @@ class DownloadPage(QMainWindow):
             subtitles = self.subtitlesButton.isChecked()
             operation = 'download' if info.objectName().startswith('download') else 'queue'
             isPlaylist = isinstance(self.activeSession, Playlist)
+
 
             print(isPlaylist)
 
@@ -186,14 +186,16 @@ class DownloadPage(QMainWindow):
     def calculateSize(self, quality) -> None:
         if isinstance(self.activeSession, YouTube):
             size = self.activeSession.streams.filter(resolution=quality).first().filesize
-            self.sizeText.setText(f'Estimated size: {translateSize(total)}')
+            self.sizeText.setText(f'Estimated size: {translateSize(size)}')
         elif isinstance(self.activeSession, Playlist):
-            total = 0
-            for video in self.activeSession.videos:
-                size = video.streams.filter(resolution=quality).first().filesize
-                total += size
-                print(size)
-            self.sizeText.setText(f'Estimated size: {translateSize(total)}')
+            for i in range(self.activeSession.length):
+                getSize = lambda: self.activeSession.videos[i].streams.filter(resolution=quality).first().filesize
+            # total = 0
+            # for video in self.activeSession.videos:
+            #     size = video.streams.filter(resolution=quality).first().filesize
+            #     total += size
+            #     print(size)
+            # self.sizeText.setText(f'Estimated size: {translateSize(total)}')
 
     def populateResolutions(self) -> None:
         if isinstance(self.activeSession, YouTube):
@@ -257,6 +259,13 @@ class DownloadPage(QMainWindow):
         self.clickPosition = event.globalPos()
 
 
+
+path = 'users'
+filename = 'subs'
+fullpath = join(path, f"{filename}.str")
+
+# with open(fullpath, 'w') as f:
+#     f.write('hello')
 
 
 if __name__ == '__main__':
