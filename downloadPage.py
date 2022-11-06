@@ -1,4 +1,5 @@
 import sys
+import asyncio
 from os.path import join, splitext
 from os import rename, remove
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
@@ -55,7 +56,7 @@ class DownloadPage(QMainWindow):
             self.grips.append(grip)
 
         self.searchButton.clicked.connect(self.onURLtype)
-        self.qualityInput.currentTextChanged.connect(self.calculateSize)
+        self.qualityInput.currentTextChanged.connect(lambda quality: asyncio.run(self.calculateSize(quality)))
         self.downloads.buttonClicked.connect(self.download_video)
 
     def onDownload(self, info):
@@ -66,8 +67,6 @@ class DownloadPage(QMainWindow):
             resolution = self.qualityInput.currentText()
             operation = 'download' if info.objectName().startswith('download') else 'queue'
             isPlaylist = isinstance(self.activeSession, Playlist)
-            
-            # self.download_video()
 
     def _download_video_or_audio(self, link=None, res=None, ext_v=None) -> str:
 
@@ -187,21 +186,13 @@ class DownloadPage(QMainWindow):
             target=self._download_video_or_audio(), daemon=True
         ).start()
 
-    def calculateSize(self, quality) -> None:
+    async def calculateSize(self, quality) -> None:
         if isinstance(self.activeSession, YouTube):
             size = self.activeSession.streams.filter(
                 resolution=quality).first().filesize
             self.sizeText.setText(f'Estimated size: {translateSize(size)}')
         elif isinstance(self.activeSession, Playlist):
-            for i in range(self.activeSession.length):
-                def getSize(): return self.activeSession.videos[i].streams.filter(
-                    resolution=quality).first().filesize
-            # total = 0
-            # for video in self.activeSession.videos:
-            #     size = video.streams.filter(resolution=quality).first().filesize
-            #     total += size
-            #     print(size)
-            # self.sizeText.setText(f'Estimated size: {translateSize(total)}')
+            self.sizeText.setText('No support for playlist sizes yet')
 
     def populateResolutions(self) -> None:
         if isinstance(self.activeSession, YouTube):
