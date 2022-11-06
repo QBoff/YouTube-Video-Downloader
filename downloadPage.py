@@ -5,15 +5,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5 import uic
-<<<<<<< Updated upstream
-from youtube import getVideoInfo
-from pytube import YouTube
-=======
 from youtube import downloadPreview, getYTSession
 from pytube import YouTube, Playlist
 from threading import Thread
 from youtube_transcript_api import YouTubeTranscriptApi
->>>>>>> Stashed changes
 
 
 class DownloadPage(QMainWindow):
@@ -41,7 +36,6 @@ class DownloadPage(QMainWindow):
         self.downloadButton.clicked.connect(self.download_video)
         self.searchButton.clicked.connect(self.onURLtype)
     
-    # the logic of this page begins
     def download_video(self) -> str:
 
         self.link = self.urlInput.text()
@@ -62,12 +56,16 @@ class DownloadPage(QMainWindow):
         mp4video = yt.streams.filter(
             file_extension=self.extension, res=self.resolution)
         
-<<<<<<< Updated upstream
-        try:    
-            mp4video.first().download(self.path_to_save)
-        except:
-            print("Downloading error")
-=======
+        for i in playList:
+            Thread(
+                target=self._download_video_or_audio(link=i, res="360p", ext_v="mp4"), daemon=True
+            )
+    
+    def download_playlist(self):
+        Thread(
+            target=self._download_your_playlist, daemon=True
+        ).start()
+        
     def download_video(self):
         Thread(
             target=self._download_video_or_audio(), daemon=True
@@ -75,7 +73,6 @@ class DownloadPage(QMainWindow):
 
     def url_processign(self, url) -> str:
         return "=".join(url.split('=')[1:])
->>>>>>> Stashed changes
 
     def onURLtype(self) -> None:
         url = self.urlInput.text()
@@ -130,7 +127,3 @@ if __name__ == '__main__':
     window = DownloadPage()
     window.show()
     sys.exit(app.exec_())
-
-
-# if __name__ == '__main__':
-#     print(getYTSession('https://www.youtube.com/watch?v=P6y4lEI-33E&list=PLvXNXbRfDbwUrABDwo2snOhDqMh_KruzC'))
