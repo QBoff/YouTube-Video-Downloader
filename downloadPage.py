@@ -74,7 +74,7 @@ class DownloadPage(QMainWindow):
 
         self.path_to_save_video = join("downloaded_video")
         self.path_to_save_audio = join("downloaded_audio")
-        self.path_to_save_subtitles = join("download_subtitles")
+        self.path_to_save_subtitles = join("downloaded_subtitles")
 
         self.link = self.urlInput.text() if link is None else link
         self.resolution = None if res is None else res
@@ -139,22 +139,22 @@ class DownloadPage(QMainWindow):
                 ('en', 'ru')
             )
             name_for_file = f"{self.name_of_video}(subtitles)"
-            try:
-                with open(join(self.path_to_save_subtitles, f"{name_for_file}.str"), "w", encoding="utf-8") as file:
+            # try:
+            with open(join(self.path_to_save_subtitles, f"{name_for_file}.str").replace("\\\\", "\\"), "w", encoding="utf-8") as file:
 
-                    for item in data:
-                        # if item starts with [ it's not our stuff :)
-                        print(item)
-                        if item["start"] < 60:
-                            time = f'{str(item["start"])} сек'
-                        elif item["start"] >= 60 and item["start"] < 3600:
-                            time = f'{item["start"] // 60} мин {str(item["start"] % 60)} сек'
-                        elif item["start"] >= 3600:
-                            time = f'{item["start"] // 3600} час {item["start"] % 3600 // 60} мин {item["start"] % 60} сек'
-                        if item["text"][0] != '[':
-                            file.write(item["text"] + " |" + time + "|" + "\n")
-            except:
-                print("Your subtitles has already been uploaded")
+                for item in data:
+                    # if item starts with [ it's not our stuff :)
+                    print(item)
+                    if item["start"] < 60:
+                        time = f'{str(item["start"])} сек'
+                    elif item["start"] >= 60 and item["start"] < 3600:
+                        time = f'{item["start"] // 60} мин {str(item["start"] % 60)} сек'
+                    elif item["start"] >= 3600:
+                        time = f'{item["start"] // 3600} час {item["start"] % 3600 // 60} мин {item["start"] % 60} сек'
+                    if item["text"][0] != '[':
+                        file.write(item["text"] + " |" + time + "|" + "\n")
+            # except:
+            #     print("Your subtitles has already been uploaded")
 
     def _download_your_playlist(self):
         self.path_to_save_video = join("downloaded_video")
