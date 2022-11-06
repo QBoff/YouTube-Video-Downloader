@@ -69,6 +69,9 @@ class DownloadPage(QMainWindow):
             # if link is correct and this video is on youtube
             yt = YouTube(self.link)
             self.name_of_video = yt.title
+            
+            video_size = yt.streams.filter(res=self.resolution).first(
+            ).filesize_approx / 1024 / 1024 / 1024 / 2
         except:
             print("Link isn't valid")
 
@@ -130,13 +133,16 @@ class DownloadPage(QMainWindow):
         self.path_to_save_subtitles = join("download_subtitles")
 
         link = self.urlInput.text()
-        playList = Playlist(link)
-        print(playList.title)
-        
-        for i in playList:
-            Thread(
-                target=self._download_video_or_audio(link=i, res="360p", ext_v="mp4"), daemon=True
-            )
+        try:
+            playList = Playlist(link)
+            # print(playList.title)
+            
+            for i in playList:
+                Thread(
+                    target=self._download_video_or_audio(link=i, res="360p", ext_v="mp4"), daemon=True
+                )
+        except:
+            print("Link isn't valid")
     
     def download_playlist(self):
         Thread(
