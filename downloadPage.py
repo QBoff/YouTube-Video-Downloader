@@ -9,6 +9,7 @@ from youtube import downloadPreview, getYTSession
 from pytube import YouTube, Playlist
 from threading import Thread
 from youtube_transcript_api import YouTubeTranscriptApi
+import furl
 
 
 def translateSize(size: int) -> str:
@@ -52,9 +53,7 @@ class DownloadPage(QMainWindow):
             grip.resize(self.gripSize, self.gripSize)
             self.grips.append(grip)
 
-        # self.downloadButton.clicked.connect(self.download_video)
         self.searchButton.clicked.connect(self.onURLtype)
-        # self.addToQueueButton.clicked.connect(self.download_playlist)
         self.qualityInput.currentTextChanged.connect(self.calculateSize)
         self.downloads.buttonClicked.connect(self.onDownload)
 
@@ -64,9 +63,13 @@ class DownloadPage(QMainWindow):
             audio = self.audioButton.isChecked()
             subtitles = self.subtitlesButton.isChecked()
             operation = 'download' if info.objectName().startswith('download') else 'queue'
-            print(video, audio, subtitles, operation)
-            
+            isPlaylist = isinstance(self.activeSession, Playlist)
 
+            print(isPlaylist)
+
+            ## Make calls from here. Session object is
+            self.activeSession
+            
     def _download_video_or_audio(self, link=None, res=None, ext_v=None) -> str:
 
         self.path_to_save_video = join("downloaded_video")
@@ -181,12 +184,19 @@ class DownloadPage(QMainWindow):
         ).start()
 
     def calculateSize(self, quality) -> None:
-        if self.activeSession is not None:
+        if isinstance(self.activeSession, YouTube):
             size = self.activeSession.streams.filter(resolution=quality).first().filesize
-            self.sizeText.setText(f'Estimated size: {translateSize(size)}')
+            self.sizeText.setText(f'Estimated size: {translateSize(total)}')
+        elif isinstance(self.activeSession, Playlist):
+            total = 0
+            for video in self.activeSession.videos:
+                size = video.streams.filter(resolution=quality).first().filesize
+                total += size
+                print(size)
+            self.sizeText.setText(f'Estimated size: {translateSize(total)}')
 
     def populateResolutions(self) -> None:
-        if self.activeSession is not None:
+        if isinstance(self.activeSession, YouTube):
             allRes = {v.resolution for v in self.activeSession.streams.filter(only_video=True) if v.resolution}
             resolutions = sorted(allRes, key=lambda x: -int(x[:-1]))
             
@@ -199,6 +209,9 @@ class DownloadPage(QMainWindow):
         self.activeSession = session
 
         if session is not None:
+            if isinstance(session, Playlist):
+                session = session.videos[0]
+
             preview = QImage.fromData(downloadPreview(session.thumbnail_url))
             pixmap = QPixmap.fromImage(preview)
 
@@ -242,6 +255,8 @@ class DownloadPage(QMainWindow):
 
     def mousePressEvent(self, event) -> None:
         self.clickPosition = event.globalPos()
+
+
 
 
 if __name__ == '__main__':
