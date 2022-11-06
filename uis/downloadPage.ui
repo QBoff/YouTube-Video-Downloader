@@ -372,7 +372,7 @@ QLabel, QPushButton {
                    <string/>
                   </property>
                   <property name="pixmap">
-                   <pixmap>../icons/authorizationLogo.png</pixmap>
+                   <pixmap>../icons/youtube.png</pixmap>
                   </property>
                   <property name="scaledContents">
                    <bool>true</bool>
@@ -600,12 +600,15 @@ QLabel, QPushButton {
                </font>
               </property>
               <property name="text">
-               <string>Quality:</string>
+               <string>Video quality:</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QComboBox" name="qualityInput">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
