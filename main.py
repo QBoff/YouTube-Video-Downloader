@@ -10,7 +10,6 @@ from managerPage import ManagerPage
 from registrationPage import RegistrationPage
 from loginPage import LoginPage
 
-
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
@@ -56,8 +55,10 @@ if __name__ == '__main__':
     # After register/login was successful
     @pyqtSlot(str)
     def successfulLogin(login):
+        QApplication.instance().login = login
         mainWin.upperText.setText(
             f'Welcome, {login}! What brings you here today?')
+
         switch(mainWin)
         registerWin.close()
         loginWin.close()

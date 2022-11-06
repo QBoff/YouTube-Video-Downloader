@@ -9,6 +9,7 @@ from youtube import downloadPreview, getYTSession
 from pytube import YouTube, Playlist
 from threading import Thread
 from youtube_transcript_api import YouTubeTranscriptApi
+from datamanager import Manager
 
 
 def translateSize(size: int) -> str:
@@ -61,14 +62,9 @@ class DownloadPage(QMainWindow):
             video = self.videoButton.isChecked()
             audio = self.audioButton.isChecked()
             subtitles = self.subtitlesButton.isChecked()
+            resolution = self.qualityInput.currentText()
             operation = 'download' if info.objectName().startswith('download') else 'queue'
             isPlaylist = isinstance(self.activeSession, Playlist)
-
-
-            print(isPlaylist)
-
-            ## Make calls from here. Session object is
-            self.activeSession
             
     def _download_video_or_audio(self, link=None, res=None, ext_v=None) -> str:
 
@@ -257,15 +253,6 @@ class DownloadPage(QMainWindow):
 
     def mousePressEvent(self, event) -> None:
         self.clickPosition = event.globalPos()
-
-
-
-path = 'users'
-filename = 'subs'
-fullpath = join(path, f"{filename}.str")
-
-# with open(fullpath, 'w') as f:
-#     f.write('hello')
 
 
 if __name__ == '__main__':

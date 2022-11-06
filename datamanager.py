@@ -1,7 +1,7 @@
 import os
 import pickle
 from dataclasses import dataclass
-from enum import Enum
+from PyQt5.QtWidgets import QApplication
 from datetime import datetime
 
 
@@ -76,11 +76,20 @@ class Manager:
             pickle.dump(allProfiles, profileFile, pickle.HIGHEST_PROTOCOL)
 
     @classmethod
-    def loadProfiles(cls) -> list:
+    def loadProfiles(cls) -> dict:
         if os.path.exists('profiles.pkl'):
             with open('profiles.pkl', 'rb') as profiles:
                 return pickle.load(profiles)
         return dict()
+
+    @classmethod
+    def getActiveUser(cls) -> Profile:
+        try:
+            login = QApplication.instance().login
+            return cls.loadProfiles()[login]
+        except:
+            print('Программа была запущена не из "main.py". Пользователь не определён')
+            print('Получай пользователя хардкодом. Manager.loadProfiles[<USERLOGIN>]')
 
     def addVideo(self, video) -> None:
         if not isinstance(video, Video):
