@@ -1,33 +1,20 @@
 import requests
-from bs4 import BeautifulSoup
-PREVIEW_FILE_NAME = 'temp.jpg'
+from pytube import YouTube
+from pytube.exceptions import VideoUnavailable, RegexMatchError
 
 
-def downloadPreview(url):
-    response = requests.get(url)
+def downloadPreview(previewLink: str) -> bytes:
+    previewLink = previewLink[:previewLink.rfind('/') + 1] + 'maxresdefault.jpg' 
+
+    response = requests.get(previewLink)
     if response.status_code == 200:
-        with open(PREVIEW_FILE_NAME, 'wb') as file:
-            file.write(response.content)
-        return PREVIEW_FILE_NAME
+        return response.content
 
 
-def getVideoInfo(url) -> dict:
-    """
-        Возвращает название, имя автора и превью видео.\n
-        Ключи <title, channel, thumbnail>
-        rtype: dict[str]
-
-        В случае неудачи не выбрасывает исключение и возвращает FALSE
-    """
+def getYTSession(url: str) -> YouTube | None:
     try:
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        title = soup.find('meta', {'property': 'og:title'})['content']
-        channelName = soup.find('link', {'itemprop': 'name'})['content']
-        previewLink = soup.find('meta', {'property': 'og:image'})['content']
-        preview = downloadPreview(previewLink)
-
-        return {'title': title, 'channel': channelName, 'thumbnail': preview}
-    except TypeError:
-        return False
+        session = YouTube(url)
+        assert session.author != 'unknown'
+    except (VideoUnavailable, RegexMatchError, AssertionError):
+        return None
+    return session

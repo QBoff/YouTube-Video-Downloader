@@ -1,7 +1,7 @@
 import sys
 from os.path import join
 
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QMainWindow, QSizeGrip, QLabel, QSizePolicy, QWidget
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QMainWindow, QSizeGrip, QLabel, QSizePolicy, QWidget, QPushButton
 from PyQt5.QtCore import Qt
 from PyQt5 import uic
 from datamanager import Manager, Video

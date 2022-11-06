@@ -3,14 +3,12 @@ from os.path import join, splitext
 from os import rename, remove
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QImage
 from PyQt5 import uic
-from youtube import getVideoInfo
+from youtube import downloadPreview, getYTSession
 from pytube import YouTube, Playlist
 from threading import Thread
 from youtube_transcript_api import YouTubeTranscriptApi
-from bs4 import BeautifulSoup
-import requests
 
 
 class DownloadPage(QMainWindow):
@@ -35,7 +33,6 @@ class DownloadPage(QMainWindow):
             grip.resize(self.gripSize, self.gripSize)
             self.grips.append(grip)
 
-        # After general stuff
         self.downloadButton.clicked.connect(self.download_video)
         self.searchButton.clicked.connect(self.onURLtype)
         self.addToQueueButton.clicked.connect(self.download_playlist)
@@ -149,7 +146,6 @@ class DownloadPage(QMainWindow):
             target=self._download_your_playlist, daemon=True
         ).start()
         
-
     def download_video(self):
         Thread(
             target=self._download_video_or_audio(), daemon=True
@@ -160,20 +156,16 @@ class DownloadPage(QMainWindow):
 
     def onURLtype(self) -> None:
         url = self.urlInput.text()
-        if url.startswith('https://www.youtube.com/watch?'):  # If url points to YouTube
-            data = getVideoInfo(url)
-            if data:  # If successfuly loaded all data
-                self.leftPageList.setCurrentWidget(self.videoInfo)
-                self.videoTitle.setText(data['title'])
-                self.channelName.setText(data['channel'])
+        session = getYTSession(url)
+        if session is not None:
+            preview = QImage.fromData(downloadPreview(session.thumbnail_url))
+            pixmap = QPixmap.fromImage(preview)
 
-                pixmap = QPixmap(data['thumbnail'])
-                self.videoPreview.setPixmap(pixmap)
-                self.setSelectorButtonsEnabled(True)
-            else:  # If url has no video in it.
-                self.leftPageList.setCurrentWidget(self.placeholderPage)
-                self.alert.setText('Something went wrong. Type in other URL')
-                self.setSelectorButtonsEnabled(False)
+            self.videoTitle.setText(session.title)
+            self.channelName.setText(session.author.upper())
+            self.videoPreview.setPixmap(pixmap)
+            self.leftPageList.setCurrentWidget(self.videoInfo)
+            self.setSelectorButtonsEnabled(True)
         else:
             self.leftPageList.setCurrentWidget(self.placeholderPage)
             self.alert.setText('This is not a valid youtube url!')
@@ -183,6 +175,7 @@ class DownloadPage(QMainWindow):
         self.videoButton.setEnabled(state)
         self.audioButton.setEnabled(state)
         self.subtitlesButton.setEnabled(state)
+        self.qualityInput.setEnabled(state)
         if state:
             self.videoButton.setChecked(True)
             self.audioButton.setChecked(True)
