@@ -11,6 +11,8 @@ from pytube import YouTube, Playlist
 from threading import Thread
 from youtube_transcript_api import YouTubeTranscriptApi
 from datamanager import Manager
+import moviepy.editor as mpe
+from time import sleep
 # from managerPage import Manager
 
 
@@ -104,13 +106,38 @@ class DownloadPage(QMainWindow):
             print("Link isn't valid")
 
         if self.extension_video == "mp4" and self.extension_audio == "mp3":
-            mp4video = yt.streams.filter(
-                file_extension=self.extension_video, res=self.resolution)
+            mp3audio = yt.streams.filter(only_audio=True)
             try:
-                mp4video.first().download(self.path_to_save_video)
-                print("ok")
+                audio = mp3audio.first().download(filename="a.mp4")
+                base, ext = splitext(audio)
+                new_file = base + '.mp3'
+                try:
+                    rename(audio, new_file)
+                except:
+                    print("Your audio has already been uploaded")
+                    remove(join(self.path_to_save_audio, audio))
+
             except:
+                print("mp3")
+                print("Download error")
+                
+            mp4video = yt.streams.filter(
+                    file_extension=self.extension_video, res=self.resolution, only_video=True)
+            try:
+                video = mp4video.first().download()
+            except:
+                print("mp4")
                 print("Downloading error")
+            name = str(video)
+            print(name)
+            clip = mpe.VideoFileClip(name)
+            audio = mpe.AudioFileClip("a.mp3")
+            sleep(0.2)
+            final_audio = mpe.CompositeAudioClip([audio])
+            final_clip = clip.set_audio(final_audio)
+            final_clip.write_videofile(join(self.path_to_save_video, name.split('\\')[-1]))
+            remove("a.mp3")
+            remove(video)
         else:
             if self.extension_video == "mp4":
                 mp4video = yt.streams.filter(
@@ -171,7 +198,7 @@ class DownloadPage(QMainWindow):
 
             for i in playList:
                 Thread(
-                    target=self._download_video_or_audio(link=i, res="360p", ext_v="mp4"), daemon=True
+                    target=self._download_video_or_audio(link=i, res=self.qualityInput.currentText(), ext_v="mp4"), daemon=True
                 )
         except:
             print("Link isn't valid")
@@ -183,7 +210,7 @@ class DownloadPage(QMainWindow):
 
     def download_video(self):
         Thread(
-            target=self._download_video_or_audio(), daemon=True
+            target=self._download_video_or_audio, daemon=True
         ).start()
 
     async def calculateSize(self, quality) -> None:
