@@ -10,6 +10,7 @@ from pytube import YouTube, Playlist
 from threading import Thread
 from youtube_transcript_api import YouTubeTranscriptApi
 from datamanager import Manager
+# from managerPage import Manager
 
 
 def translateSize(size: int) -> str:
@@ -27,7 +28,7 @@ def translateSize(size: int) -> str:
     return str(round(size, 2)) + dataTypes[currentIndex]
 
 
-def url_processign(self, url) -> str:
+def url_processign(url) -> str:
     return "=".join(url.split('=')[1:])
 
 
@@ -66,6 +67,8 @@ class DownloadPage(QMainWindow):
             operation = 'download' if info.objectName().startswith('download') else 'queue'
             isPlaylist = isinstance(self.activeSession, Playlist)
             
+            self.download_video()
+
     def _download_video_or_audio(self, link=None, res=None, ext_v=None) -> str:
 
         self.path_to_save_video = join("downloaded_video")
@@ -73,6 +76,7 @@ class DownloadPage(QMainWindow):
         self.path_to_save_subtitles = join("downloaded_subtitles")
 
         self.link = self.urlInput.text() if link is None else link
+        print(self.urlInput.text())
         self.resolution = None if res is None else res
         self.extension_video = None if ext_v is None else ext_v
         self.extension_audio = None
@@ -100,57 +104,61 @@ class DownloadPage(QMainWindow):
         except:
             print("Link isn't valid")
 
-        video_size = yt.streams.filter(res=self.resolution).first(
-        ).filesize_approx / 1024 / 1024 / 1024 / 2  # get the file size in gb
-
-        self.sizeText.setText(f"Estimated size: {str(round(video_size, 2))}GB")
-
-        if self.extension_video == "mp4":
+        if self.extension_video == "mp4" and self.extension_audio == "mp3":
             mp4video = yt.streams.filter(
                 file_extension=self.extension_video, res=self.resolution)
             try:
                 mp4video.first().download(self.path_to_save_video)
+                print("ok")
             except:
-                print("mp4")
                 print("Downloading error")
-
-        if self.extension_audio == "mp3":
-            mp3audio = yt.streams.filter(only_audio=True)
-            try:
-                audio = mp3audio.first().download(self.path_to_save_audio)
-                base, ext = splitext(audio)
-                new_file = base + '.mp3'
+        else:
+            if self.extension_video == "mp4":
+                mp4video = yt.streams.filter(
+                    file_extension=self.extension_video, res=self.resolution, only_video=True)
                 try:
-                    rename(audio, new_file)
+                    mp4video.first().download(self.path_to_save_video)
                 except:
-                    print("Your audio has already been uploaded")
-                    remove(join(self.path_to_save_audio, audio))
+                    print("mp4")
+                    print("Downloading error")
 
-            except:
-                print("Download error")
+            if self.extension_audio == "mp3":
+                mp3audio = yt.streams.filter(only_audio=True)
+                try:
+                    audio = mp3audio.first().download(self.path_to_save_audio)
+                    base, ext = splitext(audio)
+                    new_file = base + '.mp3'
+                    try:
+                        rename(audio, new_file)
+                    except:
+                        print("Your audio has already been uploaded")
+                        remove(join(self.path_to_save_audio, audio))
 
-        if self.extension_sub == "str":
-            data = YouTubeTranscriptApi.get_transcript(
-                url_processign(self.link),
-                ('en', 'ru')
-            )
-            name_for_file = f"{self.name_of_video}(subtitles)"
-            # try:
-            with open(join(self.path_to_save_subtitles, f"{name_for_file}.str").replace("\\\\", "\\"), "w", encoding="utf-8") as file:
+                except:
+                    print("Download error")
 
-                for item in data:
-                    # if item starts with [ it's not our stuff :)
-                    print(item)
-                    if item["start"] < 60:
-                        time = f'{str(item["start"])} сек'
-                    elif item["start"] >= 60 and item["start"] < 3600:
-                        time = f'{item["start"] // 60} мин {str(item["start"] % 60)} сек'
-                    elif item["start"] >= 3600:
-                        time = f'{item["start"] // 3600} час {item["start"] % 3600 // 60} мин {item["start"] % 60} сек'
-                    if item["text"][0] != '[':
-                        file.write(item["text"] + " |" + time + "|" + "\n")
-            # except:
-            #     print("Your subtitles has already been uploaded")
+            if self.extension_sub == "str":
+                data = YouTubeTranscriptApi.get_transcript(
+                    url_processign(self.link),
+                    ('en', 'ru')
+                )
+                name_for_file = f"{self.name_of_video}(subtitles)"
+                try:
+                    with open(join(self.path_to_save_subtitles, f"{name_for_file}.srt").replace("\\\\", "\\"), "w", encoding="utf-8") as file:
+
+                        for item in data:
+                            # if item starts with [ it's not our stuff :)
+                            print(item)
+                            if item["start"] < 60:
+                                time = f'{str(item["start"])} сек'
+                            elif item["start"] >= 60 and item["start"] < 3600:
+                                time = f'{item["start"] // 60} мин {str(item["start"] % 60)} сек'
+                            elif item["start"] >= 3600:
+                                time = f'{item["start"] // 3600} час {item["start"] % 3600 // 60} мин {item["start"] % 60} сек'
+                            if item["text"][0] != '[':
+                                file.write(item["text"] + " |" + time + "|" + "\n")
+                except:
+                    print("Your subtitles has already been uploaded")
 
     def _download_your_playlist(self):
         self.path_to_save_video = join("downloaded_video")
@@ -181,11 +189,13 @@ class DownloadPage(QMainWindow):
 
     def calculateSize(self, quality) -> None:
         if isinstance(self.activeSession, YouTube):
-            size = self.activeSession.streams.filter(resolution=quality).first().filesize
+            size = self.activeSession.streams.filter(
+                resolution=quality).first().filesize
             self.sizeText.setText(f'Estimated size: {translateSize(size)}')
         elif isinstance(self.activeSession, Playlist):
             for i in range(self.activeSession.length):
-                getSize = lambda: self.activeSession.videos[i].streams.filter(resolution=quality).first().filesize
+                def getSize(): return self.activeSession.videos[i].streams.filter(
+                    resolution=quality).first().filesize
             # total = 0
             # for video in self.activeSession.videos:
             #     size = video.streams.filter(resolution=quality).first().filesize
@@ -195,9 +205,10 @@ class DownloadPage(QMainWindow):
 
     def populateResolutions(self) -> None:
         if isinstance(self.activeSession, YouTube):
-            allRes = {v.resolution for v in self.activeSession.streams.filter(only_video=True) if v.resolution}
+            allRes = {v.resolution for v in self.activeSession.streams.filter(
+                only_video=True) if v.resolution}
             resolutions = sorted(allRes, key=lambda x: -int(x[:-1]))
-            
+
             self.qualityInput.clear()
             self.qualityInput.addItems(resolutions)
 
@@ -253,6 +264,14 @@ class DownloadPage(QMainWindow):
 
     def mousePressEvent(self, event) -> None:
         self.clickPosition = event.globalPos()
+
+
+path = 'users'
+filename = 'subs'
+fullpath = join(path, f"{filename}.str")
+
+# with open(fullpath, 'w') as f:
+#     f.write('hello')
 
 
 if __name__ == '__main__':
