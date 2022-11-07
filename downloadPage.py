@@ -1,16 +1,16 @@
 import sys
-import asyncio
-from asyncqt import QEventLoop, asyncSlot
+from os import remove, rename
 from os.path import join, splitext
-from os import rename, remove
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QImage
-from PyQt5 import uic
-from youtube import downloadPreview, getYTSession
-from pytube import YouTube, Playlist
 from threading import Thread
+
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QImage, QMovie, QPixmap
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
+from pytube import Playlist, YouTube
 from youtube_transcript_api import YouTubeTranscriptApi
+
+from youtube import downloadPreview, getYTSession
 
 
 def translateSize(size: int) -> str:
@@ -30,6 +30,44 @@ def translateSize(size: int) -> str:
 
 def url_processign(url) -> str:
     return "=".join(url.split('=')[1:])
+
+
+class getVideoInfo(QThread):
+    finished = pyqtSignal(str, str, QPixmap, list, dict)
+    notFound = pyqtSignal()
+
+    def __init__(self, url):
+        super().__init__()
+        self.url = url
+
+    def getFileSizes(self, session, resolutions):
+        sizes = dict()
+        for res in resolutions:
+            size = session.streams.filter(resolution=res).first().filesize
+            sizes[res] = size
+        return sizes
+
+    def run(self):
+        session = getYTSession(self.url)
+
+        if session is not None:
+            if isinstance(session, Playlist):
+                session = session.videos[0]
+
+            preview = QImage.fromData(downloadPreview(session.thumbnail_url))
+            pixmap = QPixmap.fromImage(preview)
+
+            title = session.title
+            author = session.author.upper()
+
+            allRes = {v.resolution for v in session.streams.filter(
+                only_video=True) if v.resolution}
+            resolutions = sorted(allRes, key=lambda x: -int(x[:-1]))
+
+            sizes = self.getFileSizes(session, resolutions)
+            self.finished.emit(title, author, pixmap, resolutions, sizes)
+        else:
+            self.notFound.emit()
 
 
 class DownloadPage(QMainWindow):
@@ -54,19 +92,37 @@ class DownloadPage(QMainWindow):
             grip.resize(self.gripSize, self.gripSize)
             self.grips.append(grip)
 
-        self.searchButton.clicked.connect(self.onURLtype)
+        def previewLoad():
+            self.leftPageList.setCurrentWidget(self.placeholderPage)
+            self.loadingGif = QMovie(join('icons', 'loading.gif'))
+            self.alert.setMovie(self.loadingGif)
+            self.loadingGif.start()
+
+            self.activeThread = getVideoInfo(self.urlInput.text())
+            self.activeThread.finished.connect(self.onPreviewLoad)
+            self.activeThread.notFound.connect(self.onFailedPreviewLoad)
+            self.activeThread.start(QThread.Priority.NormalPriority)
+
+        self.searchButton.clicked.connect(previewLoad)
         self.qualityInput.currentTextChanged.connect(self.calculateSize)
         self.downloads.buttonClicked.connect(self.download_video)
 
+    @pyqtSlot(str, str, QPixmap, list, dict)
+    def onPreviewLoad(self, title, author, pixmap, resolutions, sizes):
+        self.videoSizes = sizes
+        self.videoPreview.setPixmap(pixmap)
+        self.videoTitle.setText(title)
+        self.channelName.setText(author)
+        self.leftPageList.setCurrentWidget(self.videoInfo)
+        self.populateResolutions(resolutions)
+        self.setSelectorButtonsEnabled(True)
+        self.loadingGif.stop()
 
-    def onDownload(self, info):
-        if self.activeSession:
-            video = self.videoButton.isChecked()
-            audio = self.audioButton.isChecked()
-            subtitles = self.subtitlesButton.isChecked()
-            resolution = self.qualityInput.currentText()
-            operation = 'download' if info.objectName().startswith('download') else 'queue'
-            isPlaylist = isinstance(self.activeSession, Playlist)
+    @pyqtSlot()
+    def onFailedPreviewLoad(self):
+        self.leftPageList.setCurrentWidget(self.placeholderPage)
+        self.alert.setText('This is not a valid youtube url!')
+        self.setSelectorButtonsEnabled(False)
 
     def _download_video_or_audio(self, link=None, res=None, ext_v=None) -> str:
 
@@ -155,7 +211,8 @@ class DownloadPage(QMainWindow):
                             elif item["start"] >= 3600:
                                 time = f'{item["start"] // 3600} час {item["start"] % 3600 // 60} мин {item["start"] % 60} сек'
                             if item["text"][0] != '[':
-                                file.write(item["text"] + " |" + time + "|" + "\n")
+                                file.write(item["text"] +
+                                           " |" + time + "|" + "\n")
                 except:
                     print("Your subtitles has already been uploaded")
 
@@ -186,46 +243,15 @@ class DownloadPage(QMainWindow):
             target=self._download_video_or_audio(), daemon=True
         ).start()
 
+    @pyqtSlot(str)
     def calculateSize(self, quality) -> None:
-        if isinstance(self.activeSession, YouTube):
-            size = self.activeSession.streams.filter(
-                resolution=quality).first().filesize
-            self.sizeText.setText(f'Estimated size: {translateSize(size)}')
-        elif isinstance(self.activeSession, Playlist):
-            self.sizeText.setText('No support for playlist sizes yet')
+        if quality in self.videoSizes:
+            self.sizeText.setText(
+                f'Estimated size: {translateSize(self.videoSizes[quality])}')
 
-    def populateResolutions(self) -> None:
-        if isinstance(self.activeSession, YouTube):
-            allRes = {v.resolution for v in self.activeSession.streams.filter(
-                only_video=True) if v.resolution}
-            resolutions = sorted(allRes, key=lambda x: -int(x[:-1]))
-
-            self.qualityInput.clear()
-            self.qualityInput.addItems(resolutions)
-
-    @asyncSlot()
-    async def onURLtype(self) -> None:
-        url = self.urlInput.text()
-        session = getYTSession(url)
-        self.activeSession = session
-
-        if session is not None:
-            if isinstance(session, Playlist):
-                session = session.videos[0]
-
-            preview = QImage.fromData(downloadPreview(session.thumbnail_url))
-            pixmap = QPixmap.fromImage(preview)
-
-            self.videoTitle.setText(session.title)
-            self.channelName.setText(session.author.upper())
-            self.videoPreview.setPixmap(pixmap)
-            self.leftPageList.setCurrentWidget(self.videoInfo)
-            self.populateResolutions()
-            self.setSelectorButtonsEnabled(True)
-        else:
-            self.leftPageList.setCurrentWidget(self.placeholderPage)
-            self.alert.setText('This is not a valid youtube url!')
-            self.setSelectorButtonsEnabled(False)
+    def populateResolutions(self, items) -> None:
+        self.qualityInput.clear()
+        self.qualityInput.addItems(items)
 
     def setSelectorButtonsEnabled(self, state: bool) -> None:
         self.videoButton.setEnabled(state)
@@ -258,21 +284,8 @@ class DownloadPage(QMainWindow):
         self.clickPosition = event.globalPos()
 
 
-path = 'users'
-filename = 'subs'
-fullpath = join(path, f"{filename}.str")
-
-# with open(fullpath, 'w') as f:
-#     f.write('hello')
-
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = DownloadPage()
-
-    loop = QEventLoop(app)
-    asyncio.set_event_loop(loop)
-
     window.show()
-    with loop:
-        sys.exit(loop.run_forever())
+    sys.exit(app.exec_())

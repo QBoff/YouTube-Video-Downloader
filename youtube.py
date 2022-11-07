@@ -17,7 +17,7 @@ def downloadPreview(previewLink: str) -> bytes:
 
 def getYTSession(url: str) -> YouTube | Playlist | None:
     try:
-        if 'list=' in url:
+        if 'list=' in url and 'list=RDMM' not in url:
             session = Playlist(url)
             assert session.video_urls
         else:
