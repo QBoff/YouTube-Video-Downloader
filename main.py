@@ -3,22 +3,30 @@ from time import sleep
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt, pyqtSlot
+from datamanager import Manager, Profile
 
+from datetime import date
 from downloadPage import DownloadPage
 from mainPage import MainPage
 from managerPage import ManagerPage
 from registrationPage import RegistrationPage
+from profileSelector import profileSelector
 from loginPage import LoginPage
 
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 
+# yesterday = date(2022, 11, 7)
+# print(date.today())
+# print(yesterday)
+# print((date.today() - yesterday).days)
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     def switch(_to):
-        global active
+        active = app.activeWindow()
         lastPos = active.pos()
         modifiedPos = (lastPos.x() + active.width() // 2 - _to.width() // 2,
                     lastPos.y() + active.height() // 2 - _to.height() // 2)
@@ -29,41 +37,48 @@ if __name__ == '__main__':
         active.hide()
         active = _to
 
-    # Pages
-    registerWin = RegistrationPage()
-    mainWin = MainPage()
-    downloadWin = DownloadPage()
-    managerWin = ManagerPage()
-    loginWin = LoginPage()
-
-    # Initits
-    active = registerWin
-    active.show()
-
-    loginWin.registerButton.clicked.connect(
-        lambda: switch(registerWin))
-    registerWin.loginButton.clicked.connect(
-        lambda: switch(loginWin))
-    mainWin.downloadButton.clicked.connect(
-        lambda: switch(downloadWin))
-    mainWin.browseButton.clicked.connect(
-        lambda: switch(managerWin))
-
-    downloadWin.returnButton.clicked.connect(
-        lambda: switch(mainWin))
-
-    # After register/login was successful
     @pyqtSlot(str)
     def successfulLogin(login):
         QApplication.instance().login = login
-        mainWin.upperText.setText(
+        app.mainWin = MainPage()
+        app.mainWin.upperText.setText(
             f'Welcome, {login}! What brings you here today?')
 
-        switch(mainWin)
-        registerWin.close()
-        loginWin.close()
+        app.downloadPage = DownloadPage()
+        app.managerPage = ManagerPage()
+        app.mainWin.downloadButton.clicked.connect(lambda: switch(app.downloadPage))
+        app.mainWin.browseButton.clicked.connect(lambda: switch(app.managerPage))
 
-    registerWin.successfulRegister.connect(successfulLogin)
-    loginWin.successfulLogin.connect(successfulLogin)
+        app.downloadPage.returnButton.clicked.connect(lambda: switch(app.mainWin))
+
+        register = getattr(app, 'registerWin', None)
+        login = getattr(app, 'loginWin', None)
+        if register is not None and login is not None:
+            statusReg = app.registerWin.close()
+            statusLog = app.loginWin.close()
+            # print(statusReg, statusLog)
+        
+        app.mainWin.show()
+
+    profiles = Manager.loadProfiles()
+    distinctProfiles = tuple(set(profiles.values()))
+    recentProfile = profiles.get('recentProfile', None)
+
+    if not distinctProfiles:
+        app.registerWin = RegistrationPage()
+        app.loginWin = LoginPage()
+        app.registerWin.show()
+    
+        app.registerWin.loginButton.clicked.connect(lambda: switch(app.loginWin))
+        app.loginWin.registerButton.clicked.connect(lambda: switch(app.registerWin))
+        app.registerWin.successfulRegister.connect(successfulLogin)
+    elif recentProfile is not None:
+        successfulLogin(recentProfile[0].userLogin)
+    elif len(distinctProfiles) == 1:
+        successfulLogin(distinctProfiles[0].userLogin)
+    else:
+        app.profileSelector = profileSelector(distinctProfiles)
+        app.profileSelector.show()
+        app.profileSelector.profileSelected.connect(successfulLogin)
 
     sys.exit(app.exec_())

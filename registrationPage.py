@@ -3,7 +3,7 @@ import sys
 from os.path import join
 
 from database import Database
-from datamanager import Manager
+from datamanager import Manager, Profile
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5 import uic

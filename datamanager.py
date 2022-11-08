@@ -70,14 +70,18 @@ class Manager:
 
         allProfiles[userLogin] = newProfile
         for dirPath in newProfile.settings['directories'].values():
-            os.makedirs(dirPath)
+            try:
+                os.makedirs(dirPath)
+            except FileExistsError:
+                continue
 
+        print(allProfiles)
         with open('profiles.pkl', 'wb') as profileFile:
             pickle.dump(allProfiles, profileFile, pickle.HIGHEST_PROTOCOL)
 
     @classmethod
     def loadProfiles(cls) -> dict:
-        if os.path.exists('profiles.pkl'):
+        if os.path.exists('profiles.pkl') and os.path.getsize('profiles.pkl'):
             with open('profiles.pkl', 'rb') as profiles:
                 return pickle.load(profiles)
         return dict()
@@ -90,6 +94,17 @@ class Manager:
         except:
             print('Программа была запущена не из "main.py". Пользователь не определён')
             print('Получай пользователя хардкодом. Manager.loadProfiles[<USERLOGIN>]')
+
+    @classmethod
+    def setRecentProfile(login: str | Profile) -> None:
+        with open('profiles.pkl', 'rb') as f:
+            profiles = pickle.load(f)
+
+        if isinstance(login, str):
+            pass
+
+        with open('profiles.pkl', 'wb') as f:
+            pickle.dump(profiles, f, pickle.HIGHEST_PROTOCOL)
 
     def addVideo(self, video) -> None:
         if not isinstance(video, Video):
