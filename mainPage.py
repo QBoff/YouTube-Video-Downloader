@@ -1,24 +1,28 @@
 import sys
-from os.path import join
+from functools import partial
+from os.path import join, abspath
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
 from PyQt5.QtCore import Qt
 from PyQt5 import uic
+from datamanager import Manager, Profile
 
 
 class MainPage(QMainWindow):
-    def __init__(self) -> None:
+    def __init__(self, login) -> None:
         super().__init__()
+        self.activeUser = login
         self.initUI()
 
     def initUI(self) -> None:
         uic.loadUi(join('uis', 'mainPage.ui'), self)
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.loadSettings()
 
         self.exit.clicked.connect(
             lambda: sys.exit(QApplication.instance().exit()))
-        self.minimize.clicked.connect(lambda: self.showMinimized())
+        self.minimize.clicked.connect(self.showMinimized)
         self.controlPanel.mouseMoveEvent = self.moveWindow
 
         self.gripSize = 16
@@ -27,6 +31,31 @@ class MainPage(QMainWindow):
             grip = QSizeGrip(self)
             grip.resize(self.gripSize, self.gripSize)
             self.grips.append(grip)
+
+        self.settingsButton.clicked.connect(partial(self.stackedWidget.setCurrentWidget, self.settingsPage))
+        self.returnButton.clicked.connect(partial(self.stackedWidget.setCurrentWidget, self.mainPage))
+
+    def loadSettings(self):
+        try:
+            settings = Manager.getActiveUser().settings
+        except AttributeError:
+            settings = Profile.DefaultSettings(self.activeUser)
+
+        qualityPref = settings['preferredQuality']
+        optimizeFor = settings['optimizeFor']
+        
+        dirs = settings['directories']
+        videoDir = dirs['video'],
+        audioDir = dirs['audio'],
+        subDir = dirs['subtitles']
+
+        self.qualityPreference.setCurrentText(qualityPref)
+        self.optimizePreference.setCurrentText(optimizeFor)
+        self.videoDirectory.setText(abspath(videoDir[0]))
+        self.audioDirectory.setText(abspath(audioDir[0]))
+        self.subtitlesDirectory.setText(abspath(subDir))
+    
+        self.settings = settings
 
     def resizeEvent(self, event) -> None:
         QMainWindow.resizeEvent(self, event)
@@ -48,6 +77,9 @@ class MainPage(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MainPage()
+    QApplication.instance().login = 'N1qro'
+    window = MainPage('N1qro')
     window.show()
+
+    window.loadSettings()
     sys.exit(app.exec_())

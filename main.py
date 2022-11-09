@@ -27,6 +27,8 @@ if __name__ == '__main__':
 
     def switch(_to):
         active = app.activeWindow()
+        app.setActiveWindow(_to)
+
         lastPos = active.pos()
         modifiedPos = (lastPos.x() + active.width() // 2 - _to.width() // 2,
                     lastPos.y() + active.height() // 2 - _to.height() // 2)
@@ -37,10 +39,19 @@ if __name__ == '__main__':
         active.hide()
         active = _to
 
+    def openRegistration():
+        app.registerWin = RegistrationPage()
+        app.loginWin = LoginPage()
+        app.registerWin.show()
+    
+        app.registerWin.loginButton.clicked.connect(lambda: switch(app.loginWin))
+        app.loginWin.registerButton.clicked.connect(lambda: switch(app.registerWin))
+        app.registerWin.successfulRegister.connect(successfulLogin)
+
     @pyqtSlot(str)
     def successfulLogin(login):
         QApplication.instance().login = login
-        app.mainWin = MainPage()
+        app.mainWin = MainPage(login)
         app.mainWin.upperText.setText(
             f'Welcome, {login}! What brings you here today?')
 
@@ -48,6 +59,7 @@ if __name__ == '__main__':
         app.managerPage = ManagerPage()
         app.mainWin.downloadButton.clicked.connect(lambda: switch(app.downloadPage))
         app.mainWin.browseButton.clicked.connect(lambda: switch(app.managerPage))
+        # app.mainWin.logoutButton.clicked.connect(openRegistration)
 
         app.downloadPage.returnButton.clicked.connect(lambda: switch(app.mainWin))
 
@@ -56,7 +68,7 @@ if __name__ == '__main__':
         if register is not None and login is not None:
             statusReg = app.registerWin.close()
             statusLog = app.loginWin.close()
-            # print(statusReg, statusLog)
+            app.registerWin = app.loginWin = None
         
         app.mainWin.show()
 
@@ -65,13 +77,7 @@ if __name__ == '__main__':
     recentProfile = profiles.get('recentProfile', None)
 
     if not distinctProfiles:
-        app.registerWin = RegistrationPage()
-        app.loginWin = LoginPage()
-        app.registerWin.show()
-    
-        app.registerWin.loginButton.clicked.connect(lambda: switch(app.loginWin))
-        app.loginWin.registerButton.clicked.connect(lambda: switch(app.registerWin))
-        app.registerWin.successfulRegister.connect(successfulLogin)
+       openRegistration()
     elif recentProfile is not None:
         successfulLogin(recentProfile[0].userLogin)
     elif len(distinctProfiles) == 1:

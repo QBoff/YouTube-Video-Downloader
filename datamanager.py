@@ -48,7 +48,8 @@ class Profile:
                 'subtitles': os.path.join(userLogin, 'Subtitles')
             },
 
-            'preferredQuality': '1080p'
+            'preferredQuality': '1080p',
+            'optimizeFor': 'Video download'
         }
 
         return settings
@@ -91,9 +92,9 @@ class Manager:
         try:
             login = QApplication.instance().login
             return cls.loadProfiles()[login]
-        except:
-            print('Программа была запущена не из "main.py". Пользователь не определён')
-            print('Получай пользователя хардкодом. Manager.loadProfiles[<USERLOGIN>]')
+        except Exception:
+            return None
+
 
     @classmethod
     def setRecentProfile(login: str | Profile) -> None:
