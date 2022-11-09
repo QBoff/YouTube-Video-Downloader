@@ -21,8 +21,8 @@ PORT = 8010
 # account = Manager.getActiveUser()
 # pr = Profile(account.userLogin)
 # print(pr.settings)
-
-user_path = os.path.join(os.getcwd(), "qboff\\Videos")
+# "qboff\\Videos".split("\\")[0] = pr.settings['home']
+user_path = os.path.join(os.getcwd(), "qboff\\Videos".split("\\")[0])
 os.chdir(user_path)
 
 Handler = http.server.SimpleHTTPRequestHandler
@@ -52,3 +52,7 @@ with socketserver.TCPServer(("", PORT), Handler) as httpd:
     print("Type this in your Browser", IP)
     print("or Use the QRCode")
     httpd.serve_forever()
+    # когда появится ui я это добавлю на кнопку
+    # httpd.shutdown()
+    # httpd.server_close()
+    # print('httpd server has been successfully stopped')
