@@ -38,7 +38,7 @@ def url_processign(url) -> str:
 
 
 class getVideoInfo(QThread):
-    finished = pyqtSignal(str, str, QPixmap, list, dict)
+    finished = pyqtSignal(str, str, bytes, list, dict)
     notFound = pyqtSignal()
 
     def __init__(self, url):
@@ -65,8 +65,9 @@ class getVideoInfo(QThread):
                     if isinstance(session, Playlist):
                         session = session.videos[0]
 
-                    preview = QImage.fromData(downloadPreview(session.thumbnail_url))
-                    pixmap = QPixmap.fromImage(preview)
+                    preview = downloadPreview(session.thumbnail_url)
+                    # preview = QImage.fromData(downloadPreview(session.thumbnail_url))
+                    # pixmap = QPixmap.fromImage(preview)
 
                     title = session.title
                     author = session.author.upper()
@@ -76,7 +77,7 @@ class getVideoInfo(QThread):
                     resolutions = sorted(allRes, key=lambda x: -int(x[:-1]))
 
                     sizes = self.getFileSizes(session, resolutions)
-                    return self.finished.emit(title, author, pixmap, resolutions, sizes)
+                    return self.finished.emit(title, author, preview, resolutions, sizes)
                 else:
                     return self.notFound.emit()
             except IncompleteRead:
@@ -125,13 +126,13 @@ class DownloadPage(QMainWindow):
         self.qualityInput.currentTextChanged.connect(self.calculateSize)
         self.downloads.buttonClicked.connect(self.download_video)
 
-    @pyqtSlot(str, str, QPixmap, list, dict)
-    def onPreviewLoad(self, title, author, pixmap, resolutions, sizes):
+    @pyqtSlot(str, str, bytes, list, dict)
+    def onPreviewLoad(self, title, author, previewInBytes, resolutions, sizes):
         self.savedTitle = title
         self.savedAuthor = author
-        self.savedPreview = pixmap
+        self.savedPreview = previewInBytes
         self.videoSizes = sizes
-        self.videoPreview.setPixmap(self.savedPreview)
+        self.videoPreview.setPixmap(QPixmap.fromImage(QImage.fromData(previewInBytes)))
         self.videoTitle.setText(title)
         self.channelName.setText(author)
         self.leftPageList.setCurrentWidget(self.videoInfo)
