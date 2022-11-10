@@ -12,11 +12,11 @@ from datetime import date
 @dataclass(frozen=True)
 class Video:
     videoPath: str
-    previewPath: str
+    preview: bytes
     title: str
     author: str
-    uploadDate: datetime
     downloadDate: datetime = datetime.now()
+    favorite: bool = False
 
 
 @dataclass(frozen=True)
@@ -29,7 +29,7 @@ class Audio:
 
 @dataclass(frozen=True)
 class Subtitles:
-    associatedVideo: Video
+    subtitlesPath: str
     localization: str
     downloadDate: datetime = datetime.now()
 
@@ -189,7 +189,7 @@ class Manager:
                 data = pickle.load(profiles)
                 recentProfile = data.get('recentProfile', None)
                 lastEntry = data.get('lastLoginDate', None)
-                return recentProfile, lastEntry
+                return data[recentProfile], lastEntry
         return None, None
 
     @classmethod
@@ -207,9 +207,9 @@ class Manager:
 
         lastLoginDate = date.today()
         if isinstance(login, str):
-            profiles['recentProfile'] = profiles[login]
-        elif isinstance(login, Profile):
             profiles['recentProfile'] = login
+        elif isinstance(login, Profile):
+            profiles['recentProfile'] = login.userLogin
         else:
             raise TypeError('Not a "str" or "profile" like object.')
         profiles['lastLoginDate'] = lastLoginDate
@@ -240,7 +240,7 @@ class Manager:
 
         # Clear the recentProfile data
         recentProfile = allProfiles.get('recentProfile', None)
-        if recentProfile and recentProfile == deletingProfile:
+        if recentProfile and recentProfile == deletingProfile.userLogin:
             del allProfiles['recentProfile']
             del allProfiles['lastLoginDate']
         del allProfiles[deletingProfile.userLogin]
@@ -268,6 +268,27 @@ class Manager:
             raise ValueError('Passed argument is not subtitles')
         self.activeProfile.subtitles.append(subtitles)
 
+    def removeVideo(self, video, deleteFile=True) -> None:
+        assert video in self.activeProfile.videos
+        self.activeProfile.videos.remove(video)
+
+        if deleteFile:
+            os.remove(video.videoPath)
+
+    def removeAudio(self, audio, deleteFile=True) -> None:
+        assert audio in self.activeProfile.audio
+        self.activeProfile.audio.remove(audio)
+
+        if deleteFile:
+            os.remove(audio.audioPath)
+    
+    def removeSubtitles(self, subtitles, deleteFile=True) -> None:
+        assert subtitles in self.activeProfile.subtitles
+        self.activeProfile.subtitles.remove(subtitles)
+
+        if deleteFile:
+            os.remove(subtitles.subtitlesPath)
+
     def getVideos(self, *, sortKey=None, filterBy=None) -> list:
         videos = self.activeProfile.videos
         if filterBy is not None:
@@ -289,6 +310,10 @@ class Manager:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        profile, lastlogindate = self.getRecentProfile()
+        if profile and lastlogindate:
+            self.allProfiles['recentProfile'] = profile.userLogin
+            self.allProfiles['lastLoginDate'] = lastlogindate
         self.allProfiles[self.userLogin] = self.activeProfile
 
         with open('profiles.pkl', 'wb') as profiles:
@@ -297,3 +322,11 @@ class Manager:
         if exc_val:
             raise
 
+if __name__ == "__main__":
+    newVid = Video('vid2', b'', 'da', 'net')
+
+    with Manager('N1qro') as folder:
+        folder.addVideo(newVid)
+    # rp, ld = Manager.getRecentProfile()
+    # print(rp.userLogin, ld)
+    # print(rp.videos)

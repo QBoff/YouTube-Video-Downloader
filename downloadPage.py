@@ -127,8 +127,11 @@ class DownloadPage(QMainWindow):
 
     @pyqtSlot(str, str, QPixmap, list, dict)
     def onPreviewLoad(self, title, author, pixmap, resolutions, sizes):
+        self.savedTitle = title
+        self.savedAuthor = author
+        self.savedPreview = pixmap
         self.videoSizes = sizes
-        self.videoPreview.setPixmap(pixmap)
+        self.videoPreview.setPixmap(self.savedPreview)
         self.videoTitle.setText(title)
         self.channelName.setText(author)
         self.leftPageList.setCurrentWidget(self.videoInfo)
