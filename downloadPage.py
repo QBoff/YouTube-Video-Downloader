@@ -10,9 +10,10 @@ import moviepy.editor as mpe
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QImage, QMovie, QPixmap
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip, QMessageBox
 from pytube import Playlist, YouTube
 from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api._errors import TranscriptsDisabled
 
 from datamanager import Audio, Manager, Profile, Subtitles, Video
 from youtube import downloadPreview, getYTSession
@@ -31,6 +32,11 @@ def translateSize(size: int) -> str:
             break
 
     return str(round(size, 2)) + dataTypes[currentIndex]
+
+
+def showError(text):
+    msg = QMessageBox()
+    msg.exec_()
 
 
 def url_processign(url) -> str:
@@ -93,6 +99,7 @@ class DownloadPage(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.initUI()
+        self.currentlyDownloading = False
         self.activeSession = None
 
     def initUI(self) -> None:
@@ -192,20 +199,26 @@ class DownloadPage(QMainWindow):
                     i.resolution for i in yt.streams.filter(progressive=False)]
                 if self.extension_video == "mp4" and self.resolution in resolutions:
                     try:
+                        filename = self.savedTitle
+                        for punc in '\/:*?"<>|.':
+                            filename = filename.replace(punc, '')
+                        filename += '.mp4'
+
                         mp4video = yt.streams.filter(
                             progressive=True, res=self.resolution, mime_type="video/mp4")
                         mp4video.first().download(
-                            pr.settings['directories']['video'])
+                            pr.settings['directories']['video'], filename=filename)
 
                         user_login = pr.userLogin
-                        path = join(pr.settings['directories']['video'], f"{yt.title}.mp4")                        
+                        path = join(pr.settings['directories']['video'], f"{filename}")                        
                         prev = self.savedPreview
                         title = self.savedTitle
                         author = self.savedAuthor
                         with Manager(user_login) as folder:
                             folder.addVideo(Video(path, prev, title, author))
                         
-                        print("ok")
+                        print('ok')  #TODO ALERT HERE!
+                        self.currentlyDownloading = False
 
                     except AttributeError:
                         print(
@@ -275,7 +288,7 @@ class DownloadPage(QMainWindow):
                     except:
                         print("Your audio has already been uploaded")
                         remove(join(self.path_to_save_audio, audio))
-
+                    self.currentlyDownloading = False
                 except:
                     print("Download error")
 
@@ -314,11 +327,8 @@ class DownloadPage(QMainWindow):
                     except Exception as e:
                         print(traceback.format_exc())
                         print("Your subtitles has already been uploaded")
-                except Exception as e:
-                    print(traceback.format_exc())
-                    print(
-                        """Could not retrieve a transcript for the video https://www.youtube.com/watch?v=QMkK47pX6HI! This is most likely caused by: Subtitles are disabled for this video"""
-                    )
+                except TranscriptsDisabled as e:
+                    pass #TODO (TRANSCRIPTION ERROR!)
 
     def _download_your_playlist(self):
         self.path_to_save_video = join("downloaded_video")
@@ -343,9 +353,11 @@ class DownloadPage(QMainWindow):
         ).start()
 
     def download_video(self):
-        Thread(
-            target=self._download_video_or_audio, daemon=True
-        ).start()
+        if not self.currentlyDownloading:
+            self.currentlyDownloading = True
+            Thread(
+                target=self._download_video_or_audio, daemon=True
+            ).start()
 
     @pyqtSlot(str)
     def calculateSize(self, quality) -> None:

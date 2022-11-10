@@ -189,7 +189,8 @@ class Manager:
                 data = pickle.load(profiles)
                 recentProfile = data.get('recentProfile', None)
                 lastEntry = data.get('lastLoginDate', None)
-                return data[recentProfile], lastEntry
+                if recentProfile and lastEntry:
+                    return data[recentProfile], lastEntry
         return None, None
 
     @classmethod
@@ -322,11 +323,6 @@ class Manager:
         if exc_val:
             raise
 
-if __name__ == "__main__":
-    newVid = Video('vid2', b'', 'da', 'net')
-
-    with Manager('N1qro') as folder:
-        folder.addVideo(newVid)
-    # rp, ld = Manager.getRecentProfile()
-    # print(rp.userLogin, ld)
-    # print(rp.videos)
+# if __name__ == "__main__":
+#     with Manager('N1qro') as folder:
+#         print(folder.getVideos())

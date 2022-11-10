@@ -113,6 +113,7 @@ class ManagerPage(QMainWindow):
         self.minimize.clicked.connect(lambda: self.showMinimized())
         self.controlPanel.mouseMoveEvent = self.moveWindow
         self.makeConnections()
+        self.loadTemplates()
 
         self.gripSize = 16
         self.grips = []
@@ -176,7 +177,6 @@ class ManagerPage(QMainWindow):
 
         self.videoTemplates.sort(key=sortFunction, reverse=order)
 
-
     def resizeEvent(self, event) -> None:
         QMainWindow.resizeEvent(self, event)
         rect = self.rect()
@@ -200,22 +200,22 @@ if __name__ == "__main__":
     from youtube import downloadPreview, getYTSession
     from os.path import join
 
-    with Manager('N1qro') as folder:
-        # vid1 = folder.getVideos()[3]
-        vid2 = folder.getVideos()[2]
+    # with Manager('N1qro') as folder:
+    #     # vid1 = folder.getVideos()[3]
+    #     vid2 = folder.getVideos()[2]
 
     app = QApplication(sys.argv)
     QApplication.instance().login = 'N1qro'
 
     window = ManagerPage()
-    v_layout= QVBoxLayout(window.scrollContents)
-    # for i in range(20):  #TODO OVERLOADED SCROLL AREA TODO
-    #     template1 = VideoPreview(window.scrollContents, video=vid1)
-    #     v_layout.addWidget(template1)
-    # template1 = VideoPreview(window.scrollContents, video=vid1)
-    template2 = VideoPreview(video=vid2)
-    # v_layout.addWidget(template1)
-    v_layout.addWidget(template2)
+    # v_layout= QVBoxLayout(window.scrollContents)
+    # # for i in range(20):  #TODO OVERLOADED SCROLL AREA TODO
+    # #     template1 = VideoPreview(window.scrollContents, video=vid1)
+    # #     v_layout.addWidget(template1)
+    # # template1 = VideoPreview(window.scrollContents, video=vid1)
+    # template2 = VideoPreview(video=vid2)
+    # # v_layout.addWidget(template1)
+    # v_layout.addWidget(template2)
 
 
     window.show()
