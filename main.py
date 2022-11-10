@@ -16,11 +16,6 @@ QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 
-# yesterday = date(2022, 11, 7)
-# print(date.today())
-# print(yesterday)
-# print((date.today() - yesterday).days)
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
@@ -34,7 +29,6 @@ if __name__ == '__main__':
 
         _to.move(*modifiedPos)
         _to.show()
-        # active.hideEvent = lambda x: _to.show()
         active.hide()
         active = _to
 
@@ -77,7 +71,6 @@ if __name__ == '__main__':
         app.mainWin.downloadButton.clicked.connect(lambda: switch(app.downloadPage))
         app.mainWin.browseButton.clicked.connect(lambda: switch(app.managerPage))
         app.mainWin.logoutButton.clicked.connect(lambda: openProfileSelector())
-        # app.mainWin.logoutButton.clicked.connect(lambda: (app.mainWin.close(), openRegistration(page='login')))
         app.downloadPage.returnButton.clicked.connect(lambda: switch(app.mainWin))
 
         indentificationWin = getattr(app, 'identification', None)

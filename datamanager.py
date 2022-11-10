@@ -76,7 +76,6 @@ class Manager:
             except FileExistsError:
                 continue
 
-        print(allProfiles)
         with open('profiles.pkl', 'wb') as profileFile:
             pickle.dump(allProfiles, profileFile, pickle.HIGHEST_PROTOCOL)
 

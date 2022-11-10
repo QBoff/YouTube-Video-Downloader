@@ -20,9 +20,6 @@ class Database:
         """
         key, salt = self.hashPlaintext(password)
 
-        print(key.hex(), salt.hex())
-        print(len(key.hex()), len(salt.hex()))
-
         query = f"""
             INSERT INTO Entries ('login', 'password', 'email') 
             VALUES ('{login}', '{key.hex() + salt.hex()}', '{email}')
