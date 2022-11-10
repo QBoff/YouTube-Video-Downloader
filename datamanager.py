@@ -3,7 +3,7 @@ import pickle
 from dataclasses import dataclass
 from PyQt5.QtWidgets import QApplication
 from datetime import datetime
-
+from datetime import date
 
 @dataclass(frozen=True)
 class Video:
@@ -80,12 +80,27 @@ class Manager:
         with open('profiles.pkl', 'wb') as profileFile:
             pickle.dump(allProfiles, profileFile, pickle.HIGHEST_PROTOCOL)
 
-    @classmethod
-    def loadProfiles(cls) -> dict:
+    @staticmethod
+    def loadProfiles() -> dict:
+        profiles = dict()
+        if os.path.exists('profiles.pkl') and os.path.getsize('profiles.pkl'):
+            with open('profiles.pkl', 'rb') as profileFile:
+                data = pickle.load(profileFile)
+                for userlogin, profile in data.items():
+                    if type(profile).__name__ == "Profile":
+                        profiles[userlogin] = profile
+                return profiles
+        return profiles
+
+    @staticmethod
+    def getRecentProfile() -> tuple:
         if os.path.exists('profiles.pkl') and os.path.getsize('profiles.pkl'):
             with open('profiles.pkl', 'rb') as profiles:
-                return pickle.load(profiles)
-        return dict()
+                data = pickle.load(profiles)
+                recentProfile = data.get('recentProfile', None)
+                lastEntry = data.get('lastLoginDate', None)
+                return recentProfile, lastEntry
+        return None, None
 
     @classmethod
     def getActiveUser(cls) -> Profile:
@@ -95,14 +110,19 @@ class Manager:
         except Exception:
             return None
 
-
-    @classmethod
+    @staticmethod
     def setRecentProfile(login: str | Profile) -> None:
         with open('profiles.pkl', 'rb') as f:
             profiles = pickle.load(f)
 
+        lastLoginDate = date.today()
         if isinstance(login, str):
-            pass
+            profiles['recentProfile'] = profiles[login]
+        elif isinstance(login, Profile):
+            profiles['recentProfile'] = login
+        else:
+            raise TypeError('Not a "str" or "profile" like object.')
+        profiles['lastLoginDate'] = lastLoginDate
 
         with open('profiles.pkl', 'wb') as f:
             pickle.dump(profiles, f, pickle.HIGHEST_PROTOCOL)
@@ -150,3 +170,13 @@ class Manager:
 
         if exc_val:
             raise
+
+if __name__ == "__main__":
+    profiles = Manager.loadProfiles()
+    recentProfile = Manager.getRecentProfile()
+
+    # with open('profiles.pkl', 'rb') as f:
+    #     print(pickle.load(f))
+
+    print(profiles)
+    #print(recentProfile)

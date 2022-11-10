@@ -1,13 +1,14 @@
 import sys
 from os.path import join
 
-from PyQt5.QtWidgets import QApplication, QWidget, QSizePolicy
+from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5 import uic
 
 
-class profileSelector(QWidget):
+class ProfileSelector(QWidget):
     profileSelected = pyqtSignal(str)
+    newProfileRequest = pyqtSignal()
 
     def __init__(self, profiles: set) -> None:
         super().__init__()
@@ -33,11 +34,14 @@ class profileSelector(QWidget):
             self.createProfile.deleteLater()
         else:
             self.limitLabel.deleteLater()
-            self.profile3.deleteLater()
+        #     self.profile3.deleteLater()
         
     def onProfileClick(self, btn):
         login = btn.text()
-        self.profileSelected.emit(login)
+        if login == "No one's profile":
+            self.newProfileRequest.emit()
+        else:
+            self.profileSelected.emit(login)
         self.close()
 
     def moveWindow(self, event) -> None:
@@ -59,7 +63,7 @@ if __name__ == "__main__":
 
 
     app = QApplication(sys.argv)
-    window = profileSelector(set(Manager.loadProfiles().values()))
+    window = ProfileSelector(set(Manager.loadProfiles().values()))
     window.profileSelected.connect(onProfileSelect)
 
     window.show()

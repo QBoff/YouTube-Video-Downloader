@@ -9,9 +9,8 @@ from datetime import date
 from downloadPage import DownloadPage
 from mainPage import MainPage
 from managerPage import ManagerPage
-from registrationPage import RegistrationPage
-from profileSelector import profileSelector
-from loginPage import LoginPage
+from profileSelector import ProfileSelector
+from identificationPage import IdentificationPage
 
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
@@ -35,18 +34,36 @@ if __name__ == '__main__':
 
         _to.move(*modifiedPos)
         _to.show()
-        active.hideEvent = lambda x: _to.show()
+        # active.hideEvent = lambda x: _to.show()
         active.hide()
         active = _to
 
-    def openRegistration():
-        app.registerWin = RegistrationPage()
-        app.loginWin = LoginPage()
-        app.registerWin.show()
-    
-        app.registerWin.loginButton.clicked.connect(lambda: switch(app.loginWin))
-        app.loginWin.registerButton.clicked.connect(lambda: switch(app.registerWin))
-        app.registerWin.successfulRegister.connect(successfulLogin)
+    def openRegistration(page='registration'):
+        IDPage = IdentificationPage()
+        IDPage.successfulLogin.connect(successfulLogin)
+        IDPage.stackedWidget.setCurrentWidget(getattr(IDPage, page + 'Page'))
+        IDPage.show()
+
+        app.identification = IDPage
+
+    def openProfileSelector(preloadedProfiles=None):
+        app.mainWin.close()
+
+        if getattr(app, 'managerPage', None):
+            app.managerPage.close()
+        if getattr(app, 'downloadPage', None):
+            app.downloadPage.close()
+
+        if preloadedProfiles is None:
+            preloadedProfiles = tuple(set(Manager.loadProfiles().values()))
+        
+        app.ProfileSelector = ProfileSelector(preloadedProfiles)
+        app.ProfileSelector.show()
+        app.ProfileSelector.profileSelected.connect(successfulLogin)
+        app.ProfileSelector.newProfileRequest.connect(openRegistration)
+
+    profiles = Manager.loadProfiles()
+    recentProfile, lastEnterDate = Manager.getRecentProfile()
 
     @pyqtSlot(str)
     def successfulLogin(login):
@@ -59,32 +76,22 @@ if __name__ == '__main__':
         app.managerPage = ManagerPage()
         app.mainWin.downloadButton.clicked.connect(lambda: switch(app.downloadPage))
         app.mainWin.browseButton.clicked.connect(lambda: switch(app.managerPage))
-        # app.mainWin.logoutButton.clicked.connect(openRegistration)
-
+        app.mainWin.logoutButton.clicked.connect(lambda: openProfileSelector())
+        # app.mainWin.logoutButton.clicked.connect(lambda: (app.mainWin.close(), openRegistration(page='login')))
         app.downloadPage.returnButton.clicked.connect(lambda: switch(app.mainWin))
 
-        register = getattr(app, 'registerWin', None)
-        login = getattr(app, 'loginWin', None)
-        if register is not None and login is not None:
-            statusReg = app.registerWin.close()
-            statusLog = app.loginWin.close()
-            app.registerWin = app.loginWin = None
+        indentificationWin = getattr(app, 'identification', None)
+        if indentificationWin:
+            indentificationWin.close()
         
         app.mainWin.show()
+        Manager.setRecentProfile(login)
 
-    profiles = Manager.loadProfiles()
-    distinctProfiles = tuple(set(profiles.values()))
-    recentProfile = profiles.get('recentProfile', None)
-
-    if not distinctProfiles:
-       openRegistration()
-    elif recentProfile is not None:
-        successfulLogin(recentProfile[0].userLogin)
-    elif len(distinctProfiles) == 1:
-        successfulLogin(distinctProfiles[0].userLogin)
+    if not profiles:
+        openRegistration()
+    elif (recentProfile is not None) and (date.today() - lastEnterDate).days <= 7:
+        successfulLogin(recentProfile.userLogin)
     else:
-        app.profileSelector = profileSelector(distinctProfiles)
-        app.profileSelector.show()
-        app.profileSelector.profileSelected.connect(successfulLogin)
+        openProfileSelector(profiles)
 
     sys.exit(app.exec_())
