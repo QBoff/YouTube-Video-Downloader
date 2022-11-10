@@ -1,20 +1,20 @@
 import sys
+import traceback
+from http.client import IncompleteRead
 from os import remove, rename
 from os.path import join, splitext
 from threading import Thread
+from time import sleep
 
+import moviepy.editor as mpe
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QImage, QMovie, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
 from pytube import Playlist, YouTube
 from youtube_transcript_api import YouTubeTranscriptApi
-from datamanager import Manager, Profile
-import moviepy.editor as mpe
-from time import sleep
-from http.client import IncompleteRead
-import traceback
 
+from datamanager import Audio, Manager, Profile, Subtitles, Video
 from youtube import downloadPreview, getYTSession
 
 
@@ -184,18 +184,39 @@ class DownloadPage(QMainWindow):
         account = Manager.getActiveUser()
         pr = Profile(account.userLogin)
         print(pr.settings)
-        
+
         if self.extension_video == "mp4" and self.extension_audio == "mp3":
+            print(self.resolution[:-1])
             if int(self.resolution[:-1]) <= 720:
-                if self.extension_video == "mp4":
-                    mp4video = yt.streams.filter(
-                    file_extension=self.extension_video, res=self.resolution)
-                try:
-                    mp4video.first().download(pr.settings['directories']['video'])
-                    print("ok")
-                except:
-                    print("mp4")
-                    print("Downloading error")
+                resolutions = [
+                    i.resolution for i in yt.streams.filter(progressive=False)]
+                if self.extension_video == "mp4" and self.resolution in resolutions:
+                    try:
+                        mp4video = yt.streams.filter(
+                            progressive=True, res=self.resolution, mime_type="video/mp4")
+                        mp4video.first().download(
+                            pr.settings['directories']['video'])
+
+                        user_login = pr.userLogin
+                        path = join(pr.settings['directories']['video'], f"{yt.title}.mp4")                        
+                        prev = self.savedPreview
+                        title = self.savedTitle
+                        author = self.savedAuthor
+                        with Manager(user_login) as folder:
+                            folder.addVideo(Video(path, prev, title, author))
+                        
+                        print("ok")
+
+                    except AttributeError:
+                        print(
+                            f"this video cannot be downloaded in mp4 format and {self.resolution} quality")
+                    except Exception as e:
+                        print(traceback.format_exc())
+                        print("mp4")
+                        print("Downloading error")
+                else:
+                    print(
+                        f"This video cannot be downloaded in mp4 format and {self.resolution} quality")
             else:
                 mp3audio = yt.streams.filter(only_audio=True)
                 try:
@@ -206,14 +227,15 @@ class DownloadPage(QMainWindow):
                         rename(audio, new_file)
                     except:
                         print("Your audio has already been uploaded")
-                        remove(join(pr.settings['directories']['audio'], audio))
+                        remove(
+                            join(pr.settings['directories']['audio'], audio))
 
                 except:
                     print("mp3")
                     print("Download error")
-                    
+
                 mp4video = yt.streams.filter(
-                        file_extension=self.extension_video, res=self.resolution, only_video=True)
+                    file_extension=self.extension_video, res=self.resolution, only_video=True)
                 try:
                     video = mp4video.first().download()
                 except:
@@ -226,7 +248,8 @@ class DownloadPage(QMainWindow):
                 sleep(0.2)
                 final_audio = mpe.CompositeAudioClip([audio])
                 final_clip = clip.set_audio(final_audio)
-                final_clip.write_videofile(join(pr.settings['directories']['video'], name.split('\\')[-1]))
+                final_clip.write_videofile(
+                    join(pr.settings['directories']['video'], name.split('\\')[-1]))
                 remove("a.mp3")
                 remove(video)
         else:
@@ -234,7 +257,8 @@ class DownloadPage(QMainWindow):
                 mp4video = yt.streams.filter(
                     file_extension=self.extension_video, res=self.resolution, only_video=True)
                 try:
-                    mp4video.first().download(pr.settings['directories']['video'])
+                    mp4video.first().download(
+                        pr.settings['directories']['video'])
                 except:
                     print("mp4")
                     print("Downloading error")
@@ -242,7 +266,8 @@ class DownloadPage(QMainWindow):
             if self.extension_audio == "mp3":
                 mp3audio = yt.streams.filter(only_audio=True)
                 try:
-                    audio = mp3audio.first().download(pr.settings['directories']['audio'])
+                    audio = mp3audio.first().download(
+                        pr.settings['directories']['audio'])
                     base, ext = splitext(audio)
                     new_file = base + '.mp3'
                     try:
@@ -257,7 +282,8 @@ class DownloadPage(QMainWindow):
             if self.extension_sub == "str":
                 lang = 'ru'
                 try:
-                    lists_tr = YouTubeTranscriptApi.list_transcripts(url_processign(self.link))
+                    lists_tr = YouTubeTranscriptApi.list_transcripts(
+                        url_processign(self.link))
                     for i in lists_tr._translation_languages:
                         if i['language_code'] == lang:
                             print(True)
@@ -265,11 +291,9 @@ class DownloadPage(QMainWindow):
                                 url_processign(self.link),
                                 (lang,)
                             )
-                    # print(lists_tr._translation_languages)
-                    # print('ru' in lists_tr._translation_languages.split())
-                    # print(lists_tr.find_transcript(language_codes='ru'))
                     name_for_file = f"{self.name_of_video}(subtitles)"
-                    path = r'%s' % join(pr.settings['directories']['subtitles'], name_for_file) + ".txt"
+                    path = r'%s' % join(
+                        pr.settings['directories']['subtitles'], name_for_file) + ".txt"
                     for punctuation in ':*?"<>|':
                         path = path.replace(punctuation, '')
                     try:
@@ -286,7 +310,7 @@ class DownloadPage(QMainWindow):
                                     time = f'{item["start"] // 3600} час {item["start"] % 3600 // 60} мин {item["start"] % 60} сек'
                                 if item["text"][0] != '[':
                                     file.write(item["text"] +
-                                            " |" + time + "|" + "\n")
+                                               " |" + time + "|" + "\n")
                     except Exception as e:
                         print(traceback.format_exc())
                         print("Your subtitles has already been uploaded")
