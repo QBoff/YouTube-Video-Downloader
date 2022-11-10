@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>696</width>
-    <height>422</height>
+    <width>1040</width>
+    <height>568</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -191,41 +191,15 @@
             <property name="widgetResizable">
              <bool>true</bool>
             </property>
-            <widget class="QWidget" name="contents">
+            <widget class="QWidget" name="scrollContents">
              <property name="geometry">
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>445</width>
-               <height>263</height>
+               <width>805</width>
+               <height>443</height>
               </rect>
              </property>
-             <widget class="QPushButton" name="pushButton_2">
-              <property name="geometry">
-               <rect>
-                <x>6</x>
-                <y>75</y>
-                <width>79</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>PushButton</string>
-              </property>
-             </widget>
-             <widget class="QPushButton" name="pushButton">
-              <property name="geometry">
-               <rect>
-                <x>6</x>
-                <y>168</y>
-                <width>79</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>PushButton</string>
-              </property>
-             </widget>
             </widget>
            </widget>
           </item>
@@ -253,6 +227,27 @@
           <property name="bottomMargin">
            <number>20</number>
           </property>
+          <item>
+           <widget class="QPushButton" name="pushButton_3">
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>14</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: #111D4A;
+border-bottom: 2px solid #8789C0;</string>
+            </property>
+            <property name="text">
+             <string>Return back</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>../icons/arrow-left.png</normaloff>../icons/arrow-left.png</iconset>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QPushButton" name="playSelectedButton">
             <property name="sizePolicy">
@@ -305,25 +300,6 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="sortingButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font">
-             <font>
-              <family>Arial,Helvetica,sans-serif</family>
-              <pointsize>14</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Sort by: {Category}</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="showingButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
@@ -338,7 +314,38 @@
              </font>
             </property>
             <property name="text">
-             <string>Show: {type}</string>
+             <string>Show: All</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="sortingButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <family>Arial,Helvetica,sans-serif</family>
+              <pointsize>14</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Sort by: Title</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="orderButton">
+            <property name="font">
+             <font>
+              <pointsize>14</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Ascending order</string>
             </property>
            </widget>
           </item>

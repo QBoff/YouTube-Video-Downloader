@@ -3,7 +3,7 @@ from time import sleep
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt, pyqtSlot
-from datamanager import Manager, Profile
+from datamanager import Manager, Profile, Video, Audio, Subtitles
 
 from datetime import date
 from downloadPage import DownloadPage
