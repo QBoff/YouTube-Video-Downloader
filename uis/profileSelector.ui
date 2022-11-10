@@ -25,14 +25,42 @@
 	border-right: 4px solid #427c85;
 }
 
-#profileContainer QPushButton {
+
+#deleteButtons {
+	background-color: red;
+}
+
+#delete1Btn,
+#delete2Btn,
+#delete3Btn {
+	background-color: #C1292E;
+	color:#F3F3F3;
+	border: 2px solid #F3F3F3;
+	border-radius: 5%;
+
+}
+
+#delete1Btn::hover,
+#delete2Btn::hover,
+#delete3Btn::hover { background-color: #A82428 }
+#delete1Btn:pressed,
+#delete2Btn:pressed,
+#delete3Btn:pressed { background-color: #80110F }
+
+#profile1Button,
+#profile2Button,
+#profile3Button {
 	background-color: #78C3FB;
 	border: 2px solid #F9DEC9;
 	color: #312F2F;
 }
 
-#profileContainer QPushButton::hover { background-color: #1294F8 }
-#profileContainer QPushButton:pressed { background-color: #077EDA }
+#profile1Button::hover,
+#profile2Button::hover,
+#profile3Button::hover { background-color: #1294F8 }
+#profile1Button:pressed,
+#profile2Button:pressed,
+#profile3Button:pressed { background-color: #077EDA }
 
 
 #createProfile, #limitLabel {
@@ -41,7 +69,6 @@
 	padding: 5% 20% 5% 20%;
 	color: #FFF1D0;
 }
-
 
 #createProfile::hover { background-color: #A41613 }
 #createProfile:pressed { background-color: #80110F }</string>
@@ -336,6 +363,27 @@
                 </attribute>
                </widget>
               </item>
+              <item>
+               <widget class="QPushButton" name="delete1Btn">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>15</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Delete profile</string>
+                </property>
+                <attribute name="buttonGroup">
+                 <string notr="true">deleteButtons</string>
+                </attribute>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -375,6 +423,27 @@
                 </attribute>
                </widget>
               </item>
+              <item>
+               <widget class="QPushButton" name="delete2Btn">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>15</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Delete profile</string>
+                </property>
+                <attribute name="buttonGroup">
+                 <string notr="true">deleteButtons</string>
+                </attribute>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -411,6 +480,21 @@
                 </property>
                 <attribute name="buttonGroup">
                  <string notr="true">profileButtons</string>
+                </attribute>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="delete3Btn">
+                <property name="font">
+                 <font>
+                  <pointsize>15</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Delete profile</string>
+                </property>
+                <attribute name="buttonGroup">
+                 <string notr="true">deleteButtons</string>
                 </attribute>
                </widget>
               </item>
@@ -477,5 +561,6 @@
  <connections/>
  <buttongroups>
   <buttongroup name="profileButtons"/>
+  <buttongroup name="deleteButtons"/>
  </buttongroups>
 </ui>

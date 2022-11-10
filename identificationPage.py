@@ -3,8 +3,7 @@ import sys
 from os.path import join
 
 from functools import partial
-from database import Database
-from datamanager import Manager, Profile
+from datamanager import Manager, Database, Profile
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5 import uic

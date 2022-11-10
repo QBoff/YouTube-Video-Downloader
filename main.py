@@ -40,8 +40,22 @@ if __name__ == '__main__':
 
         app.identification = IDPage
 
+    @pyqtSlot(str)
+    def onProfileDeletion(login):
+        ps = app.ProfileSelector
+        for profileIndex in range(1, 4):
+            btn = getattr(ps, f'profile{profileIndex}Button')
+            if btn.text() == login:
+                deleteBtn = getattr(ps, f'delete{profileIndex}Btn')
+                deleteBtn.deleteLater()
+                break
+        btn.setText("No one's profile")
+        Manager.removeUserData(login)
+
+
     def openProfileSelector(preloadedProfiles=None):
-        app.mainWin.close()
+        if getattr(app, 'mainWin', None):
+            app.mainWin.close()
 
         if getattr(app, 'managerPage', None):
             app.managerPage.close()
@@ -49,12 +63,13 @@ if __name__ == '__main__':
             app.downloadPage.close()
 
         if preloadedProfiles is None:
-            preloadedProfiles = tuple(set(Manager.loadProfiles().values()))
+            preloadedProfiles = Manager.loadProfiles().values()
         
         app.ProfileSelector = ProfileSelector(preloadedProfiles)
         app.ProfileSelector.show()
         app.ProfileSelector.profileSelected.connect(successfulLogin)
         app.ProfileSelector.newProfileRequest.connect(openRegistration)
+        app.ProfileSelector.profileDeleteRequest.connect(onProfileDeletion)
 
     profiles = Manager.loadProfiles()
     recentProfile, lastEnterDate = Manager.getRecentProfile()
@@ -85,6 +100,6 @@ if __name__ == '__main__':
     elif (recentProfile is not None) and (date.today() - lastEnterDate).days <= 7:
         successfulLogin(recentProfile.userLogin)
     else:
-        openProfileSelector(profiles)
+        openProfileSelector(profiles.values())
 
     sys.exit(app.exec_())
