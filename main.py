@@ -18,7 +18,6 @@ QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-
     def switch(_to):
         active = app.activeWindow()
         app.setActiveWindow(_to)
@@ -51,7 +50,6 @@ if __name__ == '__main__':
                 break
         btn.setText("No one's profile")
         Manager.removeUserData(login)
-
 
     def openProfileSelector(preloadedProfiles=None):
         if getattr(app, 'mainWin', None):

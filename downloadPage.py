@@ -12,6 +12,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from datamanager import Manager, Profile
 import moviepy.editor as mpe
 from time import sleep
+from http.client import IncompleteRead
 import traceback
 
 from youtube import downloadPreview, getYTSession
@@ -55,26 +56,36 @@ class getVideoInfo(QThread):
             return sizes
 
     def run(self):
-        session = getYTSession(self.url)
+        count = 0
+        while count < 10:
+            try:
+                session = getYTSession(self.url)
 
-        if session is not None:
-            if isinstance(session, Playlist):
-                session = session.videos[0]
+                if session is not None:
+                    if isinstance(session, Playlist):
+                        session = session.videos[0]
 
-            preview = QImage.fromData(downloadPreview(session.thumbnail_url))
-            pixmap = QPixmap.fromImage(preview)
+                    preview = QImage.fromData(downloadPreview(session.thumbnail_url))
+                    pixmap = QPixmap.fromImage(preview)
 
-            title = session.title
-            author = session.author.upper()
+                    title = session.title
+                    author = session.author.upper()
 
-            allRes = {v.resolution for v in session.streams.filter(
-                only_video=True) if v.resolution}
-            resolutions = sorted(allRes, key=lambda x: -int(x[:-1]))
+                    allRes = {v.resolution for v in session.streams.filter(
+                        only_video=True) if v.resolution}
+                    resolutions = sorted(allRes, key=lambda x: -int(x[:-1]))
 
-            sizes = self.getFileSizes(session, resolutions)
-            self.finished.emit(title, author, pixmap, resolutions, sizes)
-        else:
-            self.notFound.emit()
+                    sizes = self.getFileSizes(session, resolutions)
+                    return self.finished.emit(title, author, pixmap, resolutions, sizes)
+                else:
+                    return self.notFound.emit()
+            except IncompleteRead:
+                # Happens if Internet is really slow or has high ping. In other words
+                # the connection just gets interrupted, disconnected.
+                print('connection got interrupted')
+                count += 1
+                continue
+
 
 
 class DownloadPage(QMainWindow):

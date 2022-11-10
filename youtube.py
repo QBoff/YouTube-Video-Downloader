@@ -8,9 +8,11 @@ def downloadPreview(previewLink: str) -> bytes:
     previewLink = previewLink[:rSlashIndex + 1] + 'maxresdefault.jpg'
 
     response = requests.get(previewLink)
-    if b'x10JFIF' in response:  # In case video doesn't have max res image
+
+    if response.status_code == 404:  # In case video doesn't have max res image
         newPreviewLink = previewLink[:rSlashIndex + 1] + 'hqdefault.jpg'
         response = requests.get(newPreviewLink)
+        print(newPreviewLink)
     if response.status_code == 200:
         return response.content
 
