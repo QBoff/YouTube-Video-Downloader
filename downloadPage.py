@@ -218,40 +218,15 @@ class DownloadPage(QMainWindow):
                     print(
                         f"This video cannot be downloaded in mp4 format and {self.resolution} quality")
             else:
-                mp3audio = yt.streams.filter(only_audio=True)
-                try:
-                    audio = mp3audio.first().download(filename="a.mp4")
-                    base, ext = splitext(audio)
-                    new_file = base + '.mp3'
-                    try:
-                        rename(audio, new_file)
-                    except:
-                        print("Your audio has already been uploaded")
-                        remove(
-                            join(pr.settings['directories']['audio'], audio))
-
-                except:
-                    print("mp3")
-                    print("Download error")
-
                 mp4video = yt.streams.filter(
                     file_extension=self.extension_video, res=self.resolution, only_video=True)
                 try:
-                    video = mp4video.first().download()
+                    mp4video.first().download(
+                        pr.settings['directories']['video'])
+                    print("ok")
                 except:
                     print("mp4")
                     print("Downloading error")
-                name = str(video)
-                print(name)
-                clip = mpe.VideoFileClip(name)
-                audio = mpe.AudioFileClip("a.mp3")
-                sleep(0.2)
-                final_audio = mpe.CompositeAudioClip([audio])
-                final_clip = clip.set_audio(final_audio)
-                final_clip.write_videofile(
-                    join(pr.settings['directories']['video'], name.split('\\')[-1]))
-                remove("a.mp3")
-                remove(video)
         else:
             if self.extension_video == "mp4":
                 mp4video = yt.streams.filter(
