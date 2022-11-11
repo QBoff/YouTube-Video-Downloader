@@ -286,33 +286,37 @@ class DownloadPage(QMainWindow):
                     print("mp4")
                     print("Downloading error")
         else:
-            if self.extension_video == "mp4":
-                mp4video = yt.streams.filter(
-                    file_extension=self.extension_video, res=self.resolution, only_video=True)
-                try:
-                    mp4video.first().download(
-                        pr.settings['directories']['video'])
-                    print("ok")
-                except:
-                    print("mp4")
-                    print("Downloading error")
-
-            if self.extension_audio == "mp3":
-                mp3audio = yt.streams.get_by_itag(251)  #.filter(only_audio=True)
-                try:
-                    audio = mp3audio.download(
-                        pr.settings['directories']['audio'])
-                    base, ext = splitext(audio)
-                    new_file = base + '.mp3'
+            try:
+                if self.extension_video == "mp4":
+                    mp4video = yt.streams.filter(
+                        file_extension=self.extension_video, res=self.resolution, only_video=True)
                     try:
-                        rename(audio, new_file)
+                        mp4video.first().download(
+                            pr.settings['directories']['video'])
                         print("ok")
                     except:
-                        print("Your audio has already been uploaded")
-                        remove(join(self.path_to_save_audio, audio))
-                    self.currentlyDownloading = False
-                except:
-                    print("Download error")
+                        print("mp4")
+                        print("Downloading error")
+
+                if self.extension_audio == "mp3":
+                    mp3audio = yt.streams.get_by_itag(251)  #.filter(only_audio=True)
+                    try:
+                        audio = mp3audio.download(
+                            pr.settings['directories']['audio'])
+                        base, ext = splitext(audio)
+                        new_file = base + '.mp3'
+                        try:
+                            rename(audio, new_file)
+                            print("ok")
+                        except:
+                            print("Your audio has already been uploaded")
+                            remove(join(self.path_to_save_audio, audio))
+                        self.currentlyDownloading = False
+                    except:
+                        print("Download error")
+            except:
+                print("Problems with the connection. Please reconnect")
+                
 
         if self.extension_sub == "str":
             lang = 'ru'
