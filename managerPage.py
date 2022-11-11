@@ -1,9 +1,10 @@
 import sys
 from os.path import join, getsize, isfile
-from os import startfile, listdir
+import os
+import subprocess
 
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QMainWindow, QSizeGrip, QLabel, QSizePolicy, QWidget, QMessageBox
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5 import uic
 from datamanager import Manager, Video
@@ -38,7 +39,16 @@ class AspectWidget(QWidget):
         self.setContentsMargins(h_margin, v_margin, h_margin, v_margin)
 
 
+def startfile(filename):
+    try:
+        os.startfile(filename)
+    except:
+        subprocess.Popen(['xdg-open', filename])
+
+
 class VideoPreview(QWidget):
+    videoGotRemoved = pyqtSignal(Video)
+
     def __init__(self, *args, video, **kwargs):
         super().__init__(*args, **kwargs)
         self.videoObj = video
@@ -53,6 +63,7 @@ class VideoPreview(QWidget):
 
         previewImage = QImage.fromData(self.videoObj.preview)
         self.videoName.setText(self.videoObj.title)
+        self.videoAuthor.setText(self.videoObj.author)
 
         self.playButton.clicked.connect(lambda: startfile(self.videoObj.videoPath))
         self.deleteButton.clicked.connect(self.deleteVideo)
@@ -76,7 +87,8 @@ class VideoPreview(QWidget):
                     userLogin = Manager.getActiveUser().userLogin
                     with Manager(userLogin) as folder:
                         folder.removeVideo(self.videoObj)
-                    print('deleting the video.')
+                        print('emitting')
+                        self.videoGotRemoved.emit(self.videoObj)
                     pass
 
             msgBox.buttonClicked.connect(afterClick)
@@ -102,11 +114,7 @@ class ManagerPage(QMainWindow):
         uic.loadUi(join('uis', 'videoManager.ui'), self)
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
-
-        videoPath = Manager.getActiveUser().settings['directories']['video']
-        totalSize = sum(getsize(f) for f in listdir(videoPath) if isfile(f))
-        translatedSize = translateSize(totalSize)
-        self.spaceLabel.setText(f'space taken: {translatedSize}')
+        self.calculateTotalSize()
 
         self.exit.clicked.connect(
             lambda: sys.exit(QApplication.instance().exit()))
@@ -115,12 +123,31 @@ class ManagerPage(QMainWindow):
         self.makeConnections()
         self.loadTemplates()
 
+        dirs = Manager.getActiveUser().settings['directories']
+        self.subtitlesFolder.clicked.connect(lambda: startfile(dirs['subtitles']))
+        self.videoFolder.clicked.connect(lambda: startfile(dirs['video']))
+        self.audioFolder.clicked.connect(lambda: startfile(dirs['audio']))
+
         self.gripSize = 16
         self.grips = []
         for i in range(4):
             grip = QSizeGrip(self)
             grip.resize(self.gripSize, self.gripSize)
             self.grips.append(grip)
+
+    def calculateTotalSize(self):
+        videoPath = Manager.getActiveUser().settings['directories']['video']
+        totalSize = 0
+        for path, dirs, files in os.walk(videoPath):
+            for f in files:
+                fp = join(path, f)
+                totalSize += getsize(fp)
+
+        if totalSize > 0:
+            translatedSize = translateSize(totalSize)
+            self.spaceLabel.setText(f'Space taken: {translatedSize}')
+        else:
+            self.spaceLabel.setText('Space taken: N/A (Folder empty)')
 
     def makeConnections(self):
         self.sortingButton.clicked.connect(self.onSortButtonClick)
@@ -155,14 +182,37 @@ class ManagerPage(QMainWindow):
 
         for video in videos:
             item = VideoPreview(self.scrollContents, video=video)
+            item.videoGotRemoved.connect(lambda video: self.updateTemplates(oldVideo=video))
             v_layout.addWidget(item)
             self.videoTemplates.append(item)
 
-    def updateTemplates(self, videos):
-        for video in videos:
-            item = VideoPreview(window.scrollContents, video=video)
+        if len(self.videoTemplates) > 0:
+            self.stackedWidget.setCurrentWidget(self.scrollPage)
+
+    def updateTemplates(self, newVideo=None, oldVideo=None):
+        v_layout = self.scrollContents.layout()
+        if newVideo is not None:
+            item = VideoPreview(self.scrollContents, video=newVideo)
+            item.videoGotRemoved.connect(lambda video: self.updateTemplates(oldVideo=video))
             v_layout.addWidget(item)
             self.videoTemplates.append(item)
+            self.stackedWidget.setCurrentWidget(self.scrollPage)
+
+        if oldVideo is not None:
+            for video in self.videoTemplates:
+                if video.videoObj == oldVideo:
+                    break
+            else:
+                raise AssertionError('Provided video is not in the templates')
+
+            self.videoTemplates.remove(video)
+            v_layout.removeWidget(video)
+            video.close()
+
+            if len(self.videoTemplates) == 0:
+                self.stackedWidget.setCurrentWidget(self.placeholderPage)
+
+        self.calculateTotalSize()
 
     def sortTemplates(self):
         showAll = self.showingButton.text()[6:] == 'All'
@@ -173,9 +223,17 @@ class ManagerPage(QMainWindow):
         order = order == 'Ascending'
 
         def sortFunction(video):
-            return getattr(video, sort)
+            return getattr(video.videoObj, sort)
 
         self.videoTemplates.sort(key=sortFunction, reverse=order)
+        
+        layout = self.scrollContents.layout()
+        for video in self.videoTemplates:
+            layout.removeWidget(video)
+
+        for video in self.videoTemplates:
+            layout.addWidget(video)
+
 
     def resizeEvent(self, event) -> None:
         QMainWindow.resizeEvent(self, event)

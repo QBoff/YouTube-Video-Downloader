@@ -492,11 +492,11 @@ videos</string>
                </property>
                <property name="text">
                 <string>Transfer videos to phone
-(requires USB connection)</string>
+(requires WiFi connection)</string>
                </property>
                <property name="icon">
                 <iconset>
-                 <normaloff>../icons/usb.png</normaloff>../icons/usb.png</iconset>
+                 <normaloff>../icons/wifi.png</normaloff>../icons/wifi.png</iconset>
                </property>
                <property name="iconSize">
                 <size>

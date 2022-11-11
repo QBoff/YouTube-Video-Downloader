@@ -52,7 +52,7 @@ class Profile:
                 'subtitles': os.path.join(userLogin, 'Subtitles')
             },
 
-            'preferredQuality': '1080p',
+            'preferredQuality': '720p',
             'optimizeFor': 'Video download'
         }
 

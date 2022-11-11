@@ -2,6 +2,7 @@ import sys
 from functools import partial
 from os.path import join, abspath
 
+from transferPage import TransferWindow
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip
 from PyQt5.QtCore import Qt
 from PyQt5 import uic
@@ -34,6 +35,7 @@ class MainPage(QMainWindow):
 
         self.settingsButton.clicked.connect(partial(self.stackedWidget.setCurrentWidget, self.settingsPage))
         self.returnButton.clicked.connect(partial(self.stackedWidget.setCurrentWidget, self.mainPage))
+        self.transferButton.clicked.connect(self.openTransfer)
 
     def loadSettings(self):
         try:
@@ -56,6 +58,18 @@ class MainPage(QMainWindow):
         self.subtitlesDirectory.setText(abspath(subDir))
     
         self.settings = settings
+
+    def openTransfer(self):
+        openedTransferWindow = getattr(self, 'transferWindow', None)
+        if not openedTransferWindow:
+            self.transferWindow = TransferWindow()
+            self.transferWindow.show()
+            self.transferWindow.closeEvent(lambda: setattr(self, 'transferWindow', None))
+        else:
+            self.transferWindow = None
+            self.openTransfer()
+
+
 
     def resizeEvent(self, event) -> None:
         QMainWindow.resizeEvent(self, event)

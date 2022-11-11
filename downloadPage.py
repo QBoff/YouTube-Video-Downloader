@@ -4,9 +4,7 @@ from http.client import IncompleteRead
 from os import remove, rename
 from os.path import join, splitext
 from threading import Thread
-from time import sleep
 
-import moviepy.editor as mpe
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QImage, QMovie, QPixmap
@@ -34,9 +32,15 @@ def translateSize(size: int) -> str:
     return str(round(size, 2)) + dataTypes[currentIndex]
 
 
-def showError(text):
-    msg = QMessageBox()
-    msg.exec_()
+def showMessage(title, text, infText):
+    msgBox = QMessageBox()
+    msgBox.setWindowTitle(title)
+    msgBox.setText(text)
+    msgBox.setInformativeText(infText)
+    msgBox.setIcon(QMessageBox.Information)
+    msgBox.setStandardButtons(QMessageBox.Ok)
+
+    msgBox.exec_()
 
 
 def url_processign(url) -> str:
@@ -96,6 +100,8 @@ class getVideoInfo(QThread):
 
 
 class DownloadPage(QMainWindow):
+    downloadFinished = pyqtSignal(Video)
+
     def __init__(self) -> None:
         super().__init__()
         self.initUI()
@@ -132,6 +138,15 @@ class DownloadPage(QMainWindow):
         self.searchButton.clicked.connect(previewLoad)
         self.qualityInput.currentTextChanged.connect(self.calculateSize)
         self.downloads.buttonClicked.connect(self.download_video)
+        self.downloadFinished.connect(self.onDownloadFinish)
+
+    @pyqtSlot(Video)
+    def onDownloadFinish(self, newVideo):
+        showMessage(
+            title='Successfully downloaded',
+            text='You can watch this video in the video manager',
+            infText=''    
+        )
 
     @pyqtSlot(str, str, bytes, list, dict)
     def onPreviewLoad(self, title, author, previewInBytes, resolutions, sizes):
@@ -214,13 +229,27 @@ class DownloadPage(QMainWindow):
                         prev = self.savedPreview
                         title = self.savedTitle
                         author = self.savedAuthor
-                        with Manager(user_login) as folder:
-                            folder.addVideo(Video(path, prev, title, author))
-                        
-                        print('ok')  #TODO ALERT HERE!
-                        self.currentlyDownloading = False
+                        videoObj = Video(path, prev, title, author)
 
-                    except AttributeError:
+                        with Manager(user_login) as folder:
+                            for video in folder.getVideos():
+                                if video.videoPath == videoObj.videoPath:
+                                    # showMessage(
+                                    #     title='Same video download',
+                                    #     text='You already have this video downloaded',
+                                    #     infText='Delete it from the videomanager ui and try again'    
+                                    # )
+                                    print('same video download')
+                                    break
+                            else:
+                                print('cool')
+                                folder.addVideo(videoObj)
+                                print('ok')  #TODO ALERT HERE!
+                                self.downloadFinished.emit(videoObj)
+                                self.currentlyDownloading = False
+
+                    except AttributeError as AE:
+                        print(AE)
                         print(
                             f"this video cannot be downloaded in mp4 format and {self.resolution} quality")
                     except Exception as e:
@@ -231,12 +260,26 @@ class DownloadPage(QMainWindow):
                     print(
                         f"This video cannot be downloaded in mp4 format and {self.resolution} quality")
             else:
+                mp3audio = yt.streams.filter(only_audio=True)
+                try:
+                    audio = mp3audio.first().download(filename="a.mp4")
+                    base, ext = splitext(audio)
+                    new_file = base + '.mp3'
+                    try:
+                        rename(audio, new_file)
+                    except:
+                        print("Your audio has already been uploaded")
+                        remove(
+                            join(pr.settings['directories']['audio'], audio))
+
+                except:
+                    print("mp3")
+                    print("Download error")
+
                 mp4video = yt.streams.filter(
                     file_extension=self.extension_video, res=self.resolution, only_video=True)
                 try:
-                    mp4video.first().download(
-                        pr.settings['directories']['video'])
-                    print("ok")
+                    video = mp4video.first().download()
                 except:
                     print("mp4")
                     print("Downloading error")
@@ -328,11 +371,16 @@ class DownloadPage(QMainWindow):
         ).start()
 
     def download_video(self):
-        if not self.currentlyDownloading:
-            self.currentlyDownloading = True
-            Thread(
-                target=self._download_video_or_audio, daemon=True
-            ).start()
+        try:
+            if not self.currentlyDownloading:
+                self.currentlyDownloading = True
+                Thread(
+                    target=self._download_video_or_audio, daemon=True
+                ).start()
+        except IncompleteRead:
+            print('connection lost')
+            self.currentlyDownloading = False
+            self.download_video()
 
     @pyqtSlot(str)
     def calculateSize(self, quality) -> None:
@@ -343,6 +391,7 @@ class DownloadPage(QMainWindow):
     def populateResolutions(self, items) -> None:
         self.qualityInput.clear()
         self.qualityInput.addItems(items)
+        self.qualityInput.setCurrentText('720p')
 
     def setSelectorButtonsEnabled(self, state: bool) -> None:
         self.videoButton.setEnabled(state)

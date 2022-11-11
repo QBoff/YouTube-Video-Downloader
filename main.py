@@ -1,5 +1,4 @@
 import sys
-from time import sleep
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt, pyqtSlot
@@ -81,6 +80,8 @@ if __name__ == '__main__':
 
         app.downloadPage = DownloadPage()
         app.managerPage = ManagerPage()
+        app.managerPage.returnButton.clicked.connect(lambda: switch(app.mainWin))
+        app.downloadPage.downloadFinished.connect(app.managerPage.updateTemplates)
         app.mainWin.downloadButton.clicked.connect(lambda: switch(app.downloadPage))
         app.mainWin.browseButton.clicked.connect(lambda: switch(app.managerPage))
         app.mainWin.logoutButton.clicked.connect(lambda: openProfileSelector())
