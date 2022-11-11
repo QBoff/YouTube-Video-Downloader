@@ -14,6 +14,9 @@ import png  # for converting into png format
 import os
 
 from datamanager import Manager, Profile
+from threading import Thread
+
+
 
 
 PORT = 8010
@@ -51,8 +54,9 @@ with socketserver.TCPServer(("", PORT), Handler) as httpd:
     print("serving at port", PORT)
     print("Type this in your Browser", IP)
     print("or Use the QRCode")
-    httpd.serve_forever()
+    # httpd.serve_forever(poll_interval=1)
+    Thread(target=httpd.serve_forever(poll_interval=1), daemon=True).start()
     # когда появится ui я это добавлю на кнопку
-    httpd.shutdown()
-    httpd.server_close()
+    # if input() == "a":
+    #     exit(0)
     # print('httpd server has been successfully stopped')

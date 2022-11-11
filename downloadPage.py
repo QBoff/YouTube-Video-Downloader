@@ -260,9 +260,11 @@ class DownloadPage(QMainWindow):
                     print(
                         f"This video cannot be downloaded in mp4 format and {self.resolution} quality")
             else:
-                mp3audio = yt.streams.filter(only_audio=True)
+                mp3audio = yt.streams.get_by_itag(251)  #.filter(only_audio=True, file_extension="mp4")
+                print(mp3audio)
                 try:
-                    audio = mp3audio.first().download(filename="a.mp4")
+                    audio = mp3audio.download(
+                        pr.settings['directories']['audio'])
                     base, ext = splitext(audio)
                     new_file = base + '.mp3'
                     try:
@@ -279,7 +281,7 @@ class DownloadPage(QMainWindow):
                 mp4video = yt.streams.filter(
                     file_extension=self.extension_video, res=self.resolution, only_video=True)
                 try:
-                    video = mp4video.first().download()
+                    video = mp4video.first().download(pr.settings['directories']['video'])
                 except:
                     print("mp4")
                     print("Downloading error")
@@ -290,19 +292,21 @@ class DownloadPage(QMainWindow):
                 try:
                     mp4video.first().download(
                         pr.settings['directories']['video'])
+                    print("ok")
                 except:
                     print("mp4")
                     print("Downloading error")
 
             if self.extension_audio == "mp3":
-                mp3audio = yt.streams.filter(only_audio=True)
+                mp3audio = yt.streams.get_by_itag(251)  #.filter(only_audio=True)
                 try:
-                    audio = mp3audio.first().download(
+                    audio = mp3audio.download(
                         pr.settings['directories']['audio'])
                     base, ext = splitext(audio)
                     new_file = base + '.mp3'
                     try:
                         rename(audio, new_file)
+                        print("ok")
                     except:
                         print("Your audio has already been uploaded")
                         remove(join(self.path_to_save_audio, audio))
@@ -310,43 +314,44 @@ class DownloadPage(QMainWindow):
                 except:
                     print("Download error")
 
-            if self.extension_sub == "str":
-                lang = 'ru'
+        if self.extension_sub == "str":
+            lang = 'ru'
+            try:
+                lists_tr = YouTubeTranscriptApi.list_transcripts(
+                    url_processign(self.link))
+                for i in lists_tr._translation_languages:
+                    if i['language_code'] == lang:
+                        print(True)
+                        data = YouTubeTranscriptApi.get_transcript(
+                            url_processign(self.link),
+                            (lang, 'en')
+                        )
+                name_for_file = f"{self.name_of_video}(subtitles)"
+                path = r'%s' % join(
+                    pr.settings['directories']['subtitles'], name_for_file) + ".txt"
+                for punctuation in ':*?"<>|':
+                    path = path.replace(punctuation, '')
                 try:
-                    lists_tr = YouTubeTranscriptApi.list_transcripts(
-                        url_processign(self.link))
-                    for i in lists_tr._translation_languages:
-                        if i['language_code'] == lang:
-                            print(True)
-                            data = YouTubeTranscriptApi.get_transcript(
-                                url_processign(self.link),
-                                (lang,)
-                            )
-                    name_for_file = f"{self.name_of_video}(subtitles)"
-                    path = r'%s' % join(
-                        pr.settings['directories']['subtitles'], name_for_file) + ".txt"
-                    for punctuation in ':*?"<>|':
-                        path = path.replace(punctuation, '')
-                    try:
-                        with open(path.replace(r"\\", "/"), "w", encoding="utf-8") as file:
+                    with open(path.replace(r"\\", "/"), "w", encoding="utf-8") as file:
 
-                            for item in data:
-                                # if item starts with [ it's not our stuff :)
-                                print(item)
-                                if item["start"] < 60:
-                                    time = f'{str(item["start"])} сек'
-                                elif item["start"] >= 60 and item["start"] < 3600:
-                                    time = f'{item["start"] // 60} мин {str(item["start"] % 60)} сек'
-                                elif item["start"] >= 3600:
-                                    time = f'{item["start"] // 3600} час {item["start"] % 3600 // 60} мин {item["start"] % 60} сек'
-                                if item["text"][0] != '[':
-                                    file.write(item["text"] +
-                                               " |" + time + "|" + "\n")
-                    except Exception as e:
-                        print(traceback.format_exc())
-                        print("Your subtitles has already been uploaded")
-                except TranscriptsDisabled as e:
-                    pass #TODO (TRANSCRIPTION ERROR!)
+                        for item in data:
+                            # if item starts with [ it's not our stuff :)
+                            print(item)
+                            if item["start"] < 60:
+                                time = f'{str(item["start"])} сек'
+                            elif item["start"] >= 60 and item["start"] < 3600:
+                                time = f'{item["start"] // 60} мин {str(item["start"] % 60)} сек'
+                            elif item["start"] >= 3600:
+                                time = f'{item["start"] // 3600} час {item["start"] % 3600 // 60} мин {item["start"] % 60} сек'
+                            if item["text"][0] != '[':
+                                file.write(item["text"] +
+                                            " |" + time + "|" + "\n")
+                except Exception as e:
+                    print(traceback.format_exc())
+                    print("Your subtitles has already been uploaded")
+            except TranscriptsDisabled as e:
+                print(f"Subtitles are disabled for this video (link: {self.link})")
+                pass #TODO (TRANSCRIPTION ERROR!)
 
     def _download_your_playlist(self):
         self.path_to_save_video = join("downloaded_video")
