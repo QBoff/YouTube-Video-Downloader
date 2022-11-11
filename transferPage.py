@@ -1,3 +1,4 @@
+import signal
 import sys
 from os.path import join
 from os import chdir
@@ -31,13 +32,18 @@ class TransferWindow(QWidget):
         super().__init__()
         uic.loadUi(join('uis', 'transfer.ui'), self)
         self.stopButton.clicked.connect(self.close)
+        self.flag = False
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.mouseMoveEvent = self.moveWindow
         self.startServer()
 
     def closeEvent(self, event) -> None:
-        self.closeServer()
+        Thread(
+            target=self.closeServer, daemon=True
+        )
+        # socket.close()
+        # self.closeServer()
     
     def _startServer(self):
         directory = Manager.getActiveUser().settings['directories']['home']
@@ -62,44 +68,55 @@ class TransferWindow(QWidget):
         # saves the Qrcode inform of svg
         url.png("myqr.png", scale=8)
         # opens the Qrcode image in the web browser
-        webbrowser.open('myqr.png')
+        # webbrowser.open('myqr.png')
 
-
-        # Creating the HTTP request and serving the
-        # folder in the PORT 8010,and the pyqrcode is generated
-        
-        # continuous stream of data between client and server
-        with socketserver.TCPServer(("", PORT), Handler) as httpd:
-            print("serving at port", PORT)
-            print("Type this in your Browser", IP)
-            print("or Use the QRCode")
-            # httpd.serve_forever(poll_interval=1)
-            httpd.serve_forever()
-            # когда появится ui я это добавлю на кнопку
-            # if input() == "a":
-            #     exit(0)
-            # print('httpd server has been successfully stopped')
-
-        #........................
         qrImage = "myqr.png"  # Сюда положи путь к qr коду.
         self.qrLabel.setFixedSize(450, 450)
         self.qrLabel.setScaledContents(True)
         self.qrLabel.setPixmap(QPixmap(qrImage))
+        # Creating the HTTP request and serving the
+        # folder in the PORT 8010,and the pyqrcode is generated
+        self.server = socketserver.TCPServer(("", PORT), Handler)
+        # continuous stream of data between client and server
+        with self.server as httpd:
+            try:
+                print("serving at port", PORT)
+                print("Type this in your Browser", IP)
+                print("or Use the QRCode")
+                # httpd.serve_forever(poll_interval=1)
+                
+                Thread(target=httpd.serve_forever(), daemon=True).start()
+                assassin = Thread(target=self.server.shutdown)
+                assassin.daemon = True
+                assassin.start()
+                # когда появится ui я это добавлю на кнопку
+                # if input() == "a":
+                #     exit(0)
+                # print('httpd server has been successfully stopped')
+            except KeyboardInterrupt:
+                httpd.socket.close()
 
+        #........................
+        # qrImage = "myqr.png"  # Сюда положи путь к qr коду.
+        # self.qrLabel.setFixedSize(450, 450)
+        # self.qrLabel.setScaledContents(True)
+        # self.qrLabel.setPixmap(QPixmap(os.path.join(user_path, qrImage)))
+        # print(os.path.join(user_path, qrImage))
 
     def startServer(self):
         Thread(
             target=self._startServer, daemon=True
-        )
+        ).start()
     
     def closeServer(self):
         # Функция выполниться при закрытии окна (Нажатии на кнопку)
         # ..Здесь закрой сервер..
-        PORT = 8010
-        socketserver.TCPServer(("", PORT), http.server.SimpleHTTPRequestHandler).shutdown()
-
+        # PORT = 8010
+        # server = socketserver.TCPServer(("", PORT), http.server.SimpleHTTPRequestHandler)
+        assassin = Thread(target=self.server.shutdown)
+        assassin.daemon = True
+        assassin.start()
         #........................
-        # pass
 
     def moveWindow(self, event) -> None:
         self.move(self.pos() + event.globalPos() - self.clickPosition)
