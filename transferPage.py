@@ -32,16 +32,14 @@ class TransferWindow(QWidget):
         super().__init__()
         uic.loadUi(join('uis', 'transfer.ui'), self)
         self.stopButton.clicked.connect(self.close)
-        self.flag = False
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.mouseMoveEvent = self.moveWindow
         self.startServer()
 
     def closeEvent(self, event) -> None:
-        Thread(
-            target=self.closeServer, daemon=True
-        ).start()
+        print('closeEvent fired!')
+        Thread(target=self.closeServer, daemon=True).start()
         # socket.close()
         # self.closeServer()
     
@@ -117,6 +115,7 @@ class TransferWindow(QWidget):
             assassin = Thread(target=self.server.shutdown)
             assassin.daemon = True
             assassin.start()
+            chdir('../')  # Will still break the program, if the user will open and close the ui fast enough !TODO!
         #........................
 
     def moveWindow(self, event) -> None:
