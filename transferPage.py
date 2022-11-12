@@ -41,7 +41,7 @@ class TransferWindow(QWidget):
     def closeEvent(self, event) -> None:
         Thread(
             target=self.closeServer, daemon=True
-        )
+        ).start()
         # socket.close()
         # self.closeServer()
     
@@ -113,9 +113,10 @@ class TransferWindow(QWidget):
         # ..Здесь закрой сервер..
         # PORT = 8010
         # server = socketserver.TCPServer(("", PORT), http.server.SimpleHTTPRequestHandler)
-        assassin = Thread(target=self.server.shutdown)
-        assassin.daemon = True
-        assassin.start()
+        if getattr(self, 'server', None) is not None:
+            assassin = Thread(target=self.server.shutdown)
+            assassin.daemon = True
+            assassin.start()
         #........................
 
     def moveWindow(self, event) -> None:
@@ -129,6 +130,8 @@ class TransferWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    QApplication.instance().login = 'N1qro'
+
     window = TransferWindow()
     window.show()
     app.exec_()
