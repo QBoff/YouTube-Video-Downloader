@@ -112,7 +112,8 @@ class TransferWindow(QWidget):
         # ..Здесь закрой сервер..
         # PORT = 8010
         # server = socketserver.TCPServer(("", PORT), http.server.SimpleHTTPRequestHandler)
-        if getattr(self, 'server', None) is not None:
+        if getattr(self, 'server', None) is not None and getattr(self, "closing", None):
+            self.closing = True
             assassin = Thread(target=self.server.shutdown)
             assassin.daemon = True
             assassin.start()
