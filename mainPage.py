@@ -65,7 +65,7 @@ class MainPage(QMainWindow):
             self.transferWindow = TransferWindow()
             self.transferWindow.show()
             self.transferWindow.closeEvent(lambda: setattr(self, 'transferWindow', None))
-        else:
+        elif getattr(openedTransferWindow, 'closing', None):
             self.transferWindow = None
             self.openTransfer()
 

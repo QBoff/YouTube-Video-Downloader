@@ -5,11 +5,12 @@ from os import remove, rename
 from os.path import join, splitext
 from threading import Thread
 
+from typing import Any
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QImage, QMovie, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSizeGrip, QMessageBox
-from pytube import Playlist, YouTube
+from pytube import Playlist, YouTube, Stream
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import TranscriptsDisabled
 
@@ -101,6 +102,8 @@ class getVideoInfo(QThread):
 
 class DownloadPage(QMainWindow):
     downloadFinished = pyqtSignal(Video)
+    downloadInterrupted = pyqtSignal()
+    chunkDownloaded = pyqtSignal(Stream, bytes, int)
 
     def __init__(self) -> None:
         super().__init__()
@@ -110,6 +113,7 @@ class DownloadPage(QMainWindow):
 
     def initUI(self) -> None:
         uic.loadUi(join('uis', 'downloadPage.ui'), self)
+        self.progressBar.hide()
         self.exit.clicked.connect(
             lambda: sys.exit(QApplication.instance().exit()))
         self.minimize.clicked.connect(lambda: self.showMinimized())
@@ -139,6 +143,8 @@ class DownloadPage(QMainWindow):
         self.qualityInput.currentTextChanged.connect(self.calculateSize)
         self.downloads.buttonClicked.connect(self.download_video)
         self.downloadFinished.connect(self.onDownloadFinish)
+        self.chunkDownloaded.connect(self.progressAchieved)
+        self.downloadInterrupted.connect(self.onDownloadFail)
 
     @pyqtSlot(Video)
     def onDownloadFinish(self, newVideo):
@@ -146,6 +152,14 @@ class DownloadPage(QMainWindow):
             title='Successfully downloaded',
             text='You can watch this video in the video manager',
             infText=''    
+        )
+
+    @pyqtSlot()
+    def onDownloadFail(self):
+        showMessage(
+            title='Same video',
+            text='You already have this video installed!',
+            infText='Delete it first, then try again.'
         )
 
     @pyqtSlot(str, str, bytes, list, dict)
@@ -167,6 +181,16 @@ class DownloadPage(QMainWindow):
         self.leftPageList.setCurrentWidget(self.placeholderPage)
         self.alert.setText('This is not a valid youtube url!')
         self.setSelectorButtonsEnabled(False)
+
+    @pyqtSlot(Stream, bytes, int)
+    def progressAchieved(self, stream, chunk, bytes_remaining):
+        self.progressBar.show()
+        self.progressBar.setFormat(f'{stream.title} - %p%')
+        totalDownloaded = round((1 - bytes_remaining / stream.filesize) * 100)
+        self.progressBar.setValue(totalDownloaded)
+
+        if totalDownloaded == 100:
+            self.progressBar.hide()
 
     def _download_video_or_audio(self, link=None, res=None, ext_v=None) -> str:
 
@@ -195,17 +219,19 @@ class DownloadPage(QMainWindow):
 
         try:
             # if link is correct and this video is on youtube
-            yt = YouTube(self.link)
+            print(self.link)
+            yt = YouTube(self.link, on_progress_callback=self.chunkDownloaded.emit)
+            print(yt)
             self.name_of_video = yt.title
 
             # video_size = yt.streams.filter(res=self.resolution).first(
             # ).filesize_approx / 1024 / 1024 / 1024 / 2
-        except:
+        except Exception as E:
+            print(E)
             print("Link isn't valid")
 
-        account = Manager.getActiveUser()
-        pr = Profile(account.userLogin)
-        print(pr.settings)
+        pr = Manager.getActiveUser()
+        print(pr)
 
         if self.extension_video == "mp4" and self.extension_audio == "mp3":
             print(self.resolution[:-1])
@@ -239,7 +265,8 @@ class DownloadPage(QMainWindow):
                                     #     text='You already have this video downloaded',
                                     #     infText='Delete it from the videomanager ui and try again'    
                                     # )
-                                    print('same video download')
+                                    self.downloadInterrupted.emit()
+                                    self.currentlyDownloading = False
                                     break
                             else:
                                 print('cool')
@@ -435,6 +462,8 @@ class DownloadPage(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    QApplication.instance().login = 'N1qro'
+
     window = DownloadPage()
     window.show()
     sys.exit(app.exec_())

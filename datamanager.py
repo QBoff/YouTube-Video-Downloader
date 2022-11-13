@@ -198,7 +198,7 @@ class Manager:
         try:
             login = QApplication.instance().login
             return cls.loadProfiles()[login]
-        except Exception:
+        except AttributeError:
             return None
 
     @staticmethod
