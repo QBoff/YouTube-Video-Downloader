@@ -369,11 +369,11 @@ class DownloadPage(QMainWindow):
                             # if item starts with [ it's not our stuff :)
                             print(item)
                             if item["start"] < 60:
-                                time = f'{str(item["start"])} сек'
+                                time = f'{str(round(item["start"], 2))} сек'
                             elif item["start"] >= 60 and item["start"] < 3600:
-                                time = f'{item["start"] // 60} мин {str(item["start"] % 60)} сек'
+                                time = f'{item["start"] // 60} мин {str(round(item["start"] % 60, 2))} сек'
                             elif item["start"] >= 3600:
-                                time = f'{item["start"] // 3600} час {item["start"] % 3600 // 60} мин {item["start"] % 60} сек'
+                                time = f'{item["start"] // 3600} час {item["start"] % 3600 // 60} мин {round(item["start"] % 60, 2)} сек'
                             if item["text"][0] != '[':
                                 file.write(item["text"] +
                                             " |" + time + "|" + "\n")

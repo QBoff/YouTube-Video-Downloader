@@ -72,6 +72,7 @@ class TransferWindow(QWidget):
         self.qrLabel.setFixedSize(450, 450)
         self.qrLabel.setScaledContents(True)
         self.qrLabel.setPixmap(QPixmap(qrImage))
+        os.remove("myqr.png")
         # Creating the HTTP request and serving the
         # folder in the PORT 8010,and the pyqrcode is generated
         self.server = socketserver.TCPServer(("", PORT), Handler)
@@ -111,7 +112,8 @@ class TransferWindow(QWidget):
         # ..Здесь закрой сервер..
         # PORT = 8010
         # server = socketserver.TCPServer(("", PORT), http.server.SimpleHTTPRequestHandler)
-        if getattr(self, 'server', None) is not None:
+        if getattr(self, 'server', None) is not None and getattr(self, "closing", None):
+            self.closing = True
             assassin = Thread(target=self.server.shutdown)
             assassin.daemon = True
             assassin.start()
